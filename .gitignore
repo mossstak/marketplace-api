@@ -1,0 +1,14 @@
+bin/
+obj/
+*.user
+*.suo
+*.cache
+*.log
+*.vs/
+.vscode/
+*.db
+*.DS_Store
+
+# Ignore secrets
+appsettings.Development.json
+appsettings.Local.json

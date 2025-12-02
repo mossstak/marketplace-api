@@ -1,0 +1,99 @@
+@MarketPlaceApi_HostAddress = http://localhost:5131
+
+GET {{MarketPlaceApi_HostAddress}}/
+Accept: application/json
+
+### Register User
+POST {{MarketPlaceApi_HostAddress}}/User/Register
+Content-Type: application/json
+
+{
+  "First_Name": "Mark",
+  "Last_Name": "Smith",
+  "Email": "MarkSmith@gmail.com",
+  "Password": "Tiger_1234",
+  "ConfirmPassword": "Tiger_1234",
+  "Role": "Seller",
+  "Company_Name": "Java Home",
+  "Address_One": "123 Crossroad Street",
+  "Address_Two": "14 Mornington Lane",
+  "City": "London",
+  "Country": "UK",
+  "Postal_Code": "E14 8GW"
+}
+
+### Login User
+POST {{MarketPlaceApi_HostAddress}}/User/Login
+Content-Type: application/json
+
+{
+  "email": "MarkSmith@gmail.com",
+  "password": "Tiger_1234"
+}
+
+### Add Product
+POST {{MarketPlaceApi_HostAddress}}/Product/addproduct
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJlMGYxZjJkMi0wMzg4LTRiZDMtYWIxNy1hNDYyNDE2NjZiNTQiLCJlbWFpbCI6Ik1hcmtTbWl0aEBnbWFpbC5jb20iLCJuYW1lIjoiTWFya1NtaXRoQGdtYWlsLmNvbSIsImh0dHA6Ly9zY2hlbWFzLm1pY3Jvc29mdC5jb20vd3MvMjAwOC8wNi9pZGVudGl0eS9jbGFpbXMvcm9sZSI6IlNlbGxlciIsImV4cCI6MTc2NDYyNDMzNiwiaXNzIjoiTWFya2V0UGxhY2VBcGkiLCJhdWQiOiJNYXJrZXRQbGFjZUFwaVVzZXJzIn0._KgzXiP8UejAHHDpYAWOS-9sYqYd15yRPkEn9WKMwdg
+
+{
+  "product_Name": "Guji Natural",
+  "product_Description": "Juicy, fruity Ethiopian natural.",
+  "category": 1,
+  "roastLevelName": "Light",
+  "coffeeProcessName": "Natural",
+  "regionName": "Ethiopia - Guji",
+  "producerName": "Test Farm",
+  "varietalName": "Heirloom",
+  "altitudeValue": 1950,
+  "tastingNotes": "Strawberry, blueberry, floral",
+  "roastDate": "2025-01-15T00:00:00Z",
+  "variants": [
+    {
+      "size": "250g",
+      "price": 13.50,
+      "quantity": 20
+    }
+  ]
+}
+
+### Get All Products
+GET http://localhost:5131/Product/all
+
+### ADMIN CAN VIEW USERS ONLY
+Get http://localhost:5131/User/all
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJlMGYxZjJkMi0wMzg4LTRiZDMtYWIxNy1hNDYyNDE2NjZiNTQiLCJlbWFpbCI6Ik1hcmtTbWl0aEBnbWFpbC5jb20iLCJuYW1lIjoiTWFya1NtaXRoQGdtYWlsLmNvbSIsImh0dHA6Ly9zY2hlbWFzLm1pY3Jvc29mdC5jb20vd3MvMjAwOC8wNi9pZGVudGl0eS9jbGFpbXMvcm9sZSI6IlNlbGxlciIsImV4cCI6MTc2NDQ2Mjc2OCwiaXNzIjoiTWFya2V0UGxhY2VBcGkiLCJhdWQiOiJNYXJrZXRQbGFjZUFwaVVzZXJzIn0.s-v9LEYU_nH7dhc9H6ebZKjsvkC8R4LNbUAOfa7STKk
+
+### Update Products
+PUT http://localhost:5131/Product/updateproduct/9
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJlMGYxZjJkMi0wMzg4LTRiZDMtYWIxNy1hNDYyNDE2NjZiNTQiLCJlbWFpbCI6Ik1hcmtTbWl0aEBnbWFpbC5jb20iLCJuYW1lIjoiTWFya1NtaXRoQGdtYWlsLmNvbSIsImh0dHA6Ly9zY2hlbWFzLm1pY3Jvc29mdC5jb20vd3MvMjAwOC8wNi9pZGVudGl0eS9jbGFpbXMvcm9sZSI6IlNlbGxlciIsImV4cCI6MTc2NDYyMjg2NiwiaXNzIjoiTWFya2V0UGxhY2VBcGkiLCJhdWQiOiJNYXJrZXRQbGFjZUFwaVVzZXJzIn0.LUEKIt_BlyhcOhl3mZI7w3L533JYIJHipUhvVmSJhHk
+
+{
+  "product_Name": "Guji Natural",
+  "product_Description": "Juicy, fruity Ethiopian natural.",
+  "category": 1,
+  "roastLevelId": 1,
+  "coffeeProcessId": 1,
+  "regionId": 1,
+  "producerId": 1,
+  "varietalId": 1,
+  "altitudeId": 1,
+  "tastingNotes": "Strawberry, blueberry, floral",
+  "roastDate": "2025-01-15T00:00:00Z",
+  "variants": [
+    { "id": 1, "size": "250g", "price": 13.50, "quantity": 20 }
+  ]
+}
+
+
+### Edit Products
+PATCH http://localhost:5131/Product/editproduct/11
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJlMGYxZjJkMi0wMzg4LTRiZDMtYWIxNy1hNDYyNDE2NjZiNTQiLCJlbWFpbCI6Ik1hcmtTbWl0aEBnbWFpbC5jb20iLCJuYW1lIjoiTWFya1NtaXRoQGdtYWlsLmNvbSIsImh0dHA6Ly9zY2hlbWFzLm1pY3Jvc29mdC5jb20vd3MvMjAwOC8wNi9pZGVudGl0eS9jbGFpbXMvcm9sZSI6IlNlbGxlciIsImV4cCI6MTc2NDYyMjg2NiwiaXNzIjoiTWFya2V0UGxhY2VBcGkiLCJhdWQiOiJNYXJrZXRQbGFjZUFwaVVzZXJzIn0.LUEKIt_BlyhcOhl3mZI7w3L533JYIJHipUhvVmSJhHk
+
+{
+  "product_Name": "Guji Natural – Updated",
+  "category": 1,
+  "tastingNotes": "Juicy, fruity, even better now"
+}
