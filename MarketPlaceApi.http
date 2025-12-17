@@ -1,4 +1,4 @@
-@MarketPlaceApi_HostAddress = http://localhost:5131
+@MarketPlaceApi_HostAddress = http://localhost:5000
 
 GET {{MarketPlaceApi_HostAddress}}/
 Accept: application/json
@@ -8,9 +8,9 @@ POST {{MarketPlaceApi_HostAddress}}/User/Register
 Content-Type: application/json
 
 {
-  "First_Name": "Mark",
+  "First_Name": "Barry",
   "Last_Name": "Smith",
-  "Email": "MarkSmith@gmail.com",
+  "Email": "BarrySmith@gmail.com",
   "Password": "Tiger_1234",
   "ConfirmPassword": "Tiger_1234",
   "Role": "Seller",

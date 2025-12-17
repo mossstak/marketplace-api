@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace MarketPlaceApi.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20251127000416_AddedUpdateDto")]
-    partial class AddedUpdateDto
+    [Migration("20251217172121_InitialCreate")]
+    partial class InitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -109,6 +109,63 @@ namespace MarketPlaceApi.Migrations
                     b.ToTable("CoffeeVarietal");
                 });
 
+            modelBuilder.Entity("MarketPlaceApi.Models.Order", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("BuyerId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("integer");
+
+                    b.Property<decimal>("TotalAmount")
+                        .HasColumnType("numeric");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("BuyerId");
+
+                    b.ToTable("Orders");
+                });
+
+            modelBuilder.Entity("MarketPlaceApi.Models.OrderItem", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("OrderId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("ProductVariantId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("Quantity")
+                        .HasColumnType("integer");
+
+                    b.Property<decimal>("UnitPrice")
+                        .HasColumnType("numeric");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("OrderId");
+
+                    b.HasIndex("ProductVariantId");
+
+                    b.ToTable("OrderItems");
+                });
+
             modelBuilder.Entity("MarketPlaceApi.Models.Product", b =>
                 {
                     b.Property<int>("Id")
@@ -118,6 +175,9 @@ namespace MarketPlaceApi.Migrations
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<int>("AltitudeId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("Category")
                         .HasColumnType("integer");
 
                     b.Property<int>("CoffeeProcessId")
@@ -130,6 +190,7 @@ namespace MarketPlaceApi.Migrations
                         .HasColumnType("text");
 
                     b.Property<string>("Product_Name")
+                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<int>("RegionId")
@@ -439,6 +500,36 @@ namespace MarketPlaceApi.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
+            modelBuilder.Entity("MarketPlaceApi.Models.Order", b =>
+                {
+                    b.HasOne("MarketPlaceApi.Models.User", "Buyer")
+                        .WithMany()
+                        .HasForeignKey("BuyerId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Buyer");
+                });
+
+            modelBuilder.Entity("MarketPlaceApi.Models.OrderItem", b =>
+                {
+                    b.HasOne("MarketPlaceApi.Models.Order", "Order")
+                        .WithMany("Items")
+                        .HasForeignKey("OrderId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("MarketPlaceApi.Models.ProductVariant", "Variant")
+                        .WithMany()
+                        .HasForeignKey("ProductVariantId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Order");
+
+                    b.Navigation("Variant");
+                });
+
             modelBuilder.Entity("MarketPlaceApi.Models.Product", b =>
                 {
                     b.HasOne("MarketPlaceApi.Models.CoffeeAltitude", "Altitude")
@@ -557,6 +648,11 @@ namespace MarketPlaceApi.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("MarketPlaceApi.Models.Order", b =>
+                {
+                    b.Navigation("Items");
                 });
 
             modelBuilder.Entity("MarketPlaceApi.Models.Product", b =>

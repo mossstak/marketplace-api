@@ -55,6 +55,35 @@ namespace MarketPlaceApi.Controllers
             return Ok(products);
         }
 
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetProductById(int id)
+        {
+            try
+            {
+                var product = await _productService.GetProductByIdAsync(id);
+                return Ok(product);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
+        }
+
+        [Authorize(Roles = "Seller")]
+        [HttpGet("me")]
+        public async Task<IActionResult> GetMyProducts()
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null)
+            {
+                return Unauthorized("User not found");
+            }
+
+            var products = await _productService.GetProductsBySellerAsync(user.Id);
+            return Ok(products);
+        }
+
+
         [Authorize(Roles = "Seller, Admin")]
         [HttpPatch("editproduct/{id}")]
         public async Task<IActionResult> EditProduct(int id, [FromBody] EditProductDto dto)

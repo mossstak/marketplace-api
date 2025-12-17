@@ -19,6 +19,17 @@ builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseNpgsql
 //Stripe Config
 StripeConfiguration.ApiKey = builder.Configuration["Stripe:SecretKey"];
 
+//Cors-Configuration
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowFrontend",
+        policy =>
+        {
+            policy.WithOrigins("http://localhost:5173","http://localhost:3000")
+                  .AllowAnyHeader()
+                  .AllowAnyMethod();
+        });
+});
 
 // Identity
 builder.Services.AddIdentity<User, IdentityRole>(options =>
@@ -78,6 +89,11 @@ app.UseAuthentication();
 app.UseAuthorization();
 app.MapGet("/", () => "API is running!");
 app.MapControllers();
+
+app.UseCors("AllowFrontend");
+
+// your endpoints
+app.MapGet("/Products/all", () => Results.Ok(new[] { new { Id = 1, Name = "Test" } }));
 
 using (var scope = app.Services.CreateScope())
 {

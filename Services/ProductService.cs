@@ -24,6 +24,8 @@ namespace MarketPlaceApi.Controllers
             _context = context;
             _coffeeAttributeService = coffeeAttributeService;
         }
+
+        //Creates Product
         public async Task<Product> CreateProductAsync(CreateProductDto dto, User seller)
         {
             var roastLevel = await _coffeeAttributeService.GetOrCreateRoastLevelAsync(dto.RoastLevelName);
@@ -68,6 +70,7 @@ namespace MarketPlaceApi.Controllers
             return product;
         }
 
+        //Edit Products
         public async Task EditProductAsync(int id, EditProductDto dto)
         {
             var product = await _context.Products.FindAsync(id) ?? throw new KeyNotFoundException("Product Not Found");
@@ -98,6 +101,7 @@ namespace MarketPlaceApi.Controllers
             await _context.SaveChangesAsync();
         }
 
+        //Gets All Products
         public async Task<IEnumerable<object>> GetAllProductsAsync()
         {
             var products = await _context.Products.Select(p => new
@@ -107,24 +111,92 @@ namespace MarketPlaceApi.Controllers
                 p.Product_Description,
                 category = p.Category.ToString(),
                 Seller = new { p.SellerId, p.Seller!.Email, p.Seller.Company_Name },
-                Variants = p.Variants.Select(v => new
-                {
-                    v.Id,
-                    v.Size,
-                    v.Price,
-                    v.Quantity,
-                }),
-                producer = p.Producer.Name,
-                region = p.Region.Name,
-                coffeeprocess = p.CoffeeProcess.Name,
-                varietal = p.Varietal.Name,
-                altitude = p.Altitude.ValueInMasl,
-                p.TastingNotes,
-                p.RoastDate
+                // Variants = p.Variants.Select(v => new
+                // {
+                //     v.Id,
+                //     v.Size,
+                //     v.Price,
+                //     v.Quantity,
+                // }),
+                // producer = p.Producer.Name,
+                // region = p.Region.Name,
+                // coffeeprocess = p.CoffeeProcess.Name,
+                // varietal = p.Varietal.Name,
+                // altitude = p.Altitude.ValueInMasl,
+                // p.TastingNotes,
+                // p.RoastDate
             }).ToListAsync();
 
             return products.Cast<object>();
         }
+
+        //Get Product By Id
+        public async Task<object> GetProductByIdAsync(int id)
+        {
+            var product = await _context.Products
+                .Where(p => p.Id == id)
+                .Select(p => new
+                {
+                    p.Id,
+                    p.Product_Name,
+                    p.Product_Description,
+                    category = p.Category.ToString(),
+                    Seller = new { p.SellerId, p.Seller!.Email, p.Seller.Company_Name },
+                    Variants = p.Variants.Select(v => new
+                    {
+                        v.Id,
+                        v.Size,
+                        v.Price,
+                        v.Quantity,
+                    }),
+                    producer = p.Producer.Name,
+                    region = p.Region.Name,
+                    coffeeprocess = p.CoffeeProcess.Name,
+                    varietal = p.Varietal.Name,
+                    altitude = p.Altitude.ValueInMasl,
+                    p.TastingNotes,
+                    p.RoastDate
+                })
+                .FirstOrDefaultAsync();
+
+            if (product == null)
+                throw new KeyNotFoundException("Product Not Found");
+
+            return product;
+        }
+
+        //Gets Product by individual product via ID
+        public async Task<IEnumerable<object>> GetProductsBySellerAsync(string sellerId)
+        {
+            var products = await _context.Products
+                .Where(p => p.SellerId == sellerId)
+                .Select(p => new
+                {
+                    p.Id,
+                    p.Product_Name,
+                    p.Product_Description,
+                    category = p.Category.ToString(),
+                    Seller = new { p.SellerId, p.Seller!.Email, p.Seller.Company_Name },
+                    Variants = p.Variants.Select(v => new
+                    {
+                        v.Id,
+                        v.Size,
+                        v.Price,
+                        v.Quantity,
+                    }),
+                    producer = p.Producer.Name,
+                    region = p.Region.Name,
+                    coffeeprocess = p.CoffeeProcess.Name,
+                    varietal = p.Varietal.Name,
+                    altitude = p.Altitude.ValueInMasl,
+                    p.TastingNotes,
+                    p.RoastDate
+                })
+                .ToListAsync();
+
+            return products.Cast<object>();
+        }
+
 
         public async Task UpdateProductAsync(int id, UpdateProductDto dto)
         {

@@ -12,6 +12,7 @@ namespace MarketPlaceApi.Services
         Task<User> Register(RegisterDto dto);
         Task<User> Login(LoginDto dto);
         Task<IEnumerable<object>> GetAllUser();
+        Task<IEnumerable<object>> GetMyUsers();
         Task UpdateUserAsync(string id, UpdateUserDto dto);
         Task EditUserAsync(string id, EditUserDto dto);
         Task ChangePasswordAsync(string userId, ChangePasswordDto dto);

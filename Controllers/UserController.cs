@@ -86,6 +86,13 @@ namespace MarketPlaceApi.Controllers
             return Ok(users);
         }
 
+        [HttpGet("me")]
+        public async Task<IActionResult> GetMyUsers()
+        {
+            var users = await _userService.GetMyUsers();
+            return Ok(users);
+        }
+
         [Authorize(Roles = "Admin")]
         [HttpPatch("edituser/{id}")]
         public async Task<IActionResult> EditUser(string id, [FromBody] EditUserDto dto)
