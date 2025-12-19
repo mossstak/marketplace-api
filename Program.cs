@@ -25,7 +25,7 @@ builder.Services.AddCors(options =>
     options.AddPolicy("AllowFrontend",
         policy =>
         {
-            policy.WithOrigins("http://localhost:5173","http://localhost:3000")
+            policy.WithOrigins("http://localhost:5173", "http://localhost:3000")
                   .AllowAnyHeader()
                   .AllowAnyMethod();
         });
@@ -75,6 +75,11 @@ builder.Services.AddScoped<IOrderService, OrderService>();
 builder.Services.AddScoped<MarketPlaceApi.Services.TokenService>();
 
 
+//Cloudinary
+builder.Services.Configure<CloudinaryOptions>(builder.Configuration.GetSection("Cloudinary"));
+builder.Services.AddScoped<ICloudinarySigner, CloudinarySigner>();
+builder.Services.AddScoped<IProductImagesService, ProductImagesService>();
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -85,12 +90,12 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
+app.UseCors("AllowFrontend");
 app.UseAuthentication();
 app.UseAuthorization();
-app.MapGet("/", () => "API is running!");
 app.MapControllers();
 
-app.UseCors("AllowFrontend");
+app.MapGet("/", () => "API is running!");
 
 // your endpoints
 app.MapGet("/Products/all", () => Results.Ok(new[] { new { Id = 1, Name = "Test" } }));
@@ -98,7 +103,7 @@ app.MapGet("/Products/all", () => Results.Ok(new[] { new { Id = 1, Name = "Test"
 using (var scope = app.Services.CreateScope())
 {
     var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
-    string[] roles = {"Admin", "Seller", "Buyer"};
+    string[] roles = { "Admin", "Seller", "Buyer" };
 
     foreach (var role in roles)
     {
