@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using Npgsql;
 using Stripe;
 using System.Text;
 
@@ -14,7 +15,26 @@ builder.Services.AddOpenApi();
 builder.Services.AddEndpointsApiExplorer();
 
 // Database
-builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+if (string.IsNullOrWhiteSpace(connectionString))
+{
+    throw new InvalidOperationException("DefaultConnection is empty. Check ConnectionStrings__DefaultConnection or appsettings.");
+}
+try
+{
+    var parsed = new NpgsqlConnectionStringBuilder(connectionString);
+    builder.Logging.AddSimpleConsole(options => options.SingleLine = true);
+    builder.Logging.Services.BuildServiceProvider()
+        .GetRequiredService<ILoggerFactory>()
+        .CreateLogger("Startup")
+        .LogInformation("Using DB {Database} on {Host}:{Port} as {Username}.",
+            parsed.Database, parsed.Host, parsed.Port, parsed.Username);
+}
+catch
+{
+    // If parsing fails, let EF/Npgsql throw the original exception.
+}
+builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseNpgsql(connectionString));
 
 //Stripe Config
 StripeConfiguration.ApiKey = builder.Configuration["Stripe:SecretKey"];
@@ -102,6 +122,9 @@ app.MapGet("/Products/all", () => Results.Ok(new[] { new { Id = 1, Name = "Test"
 
 using (var scope = app.Services.CreateScope())
 {
+    var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+    await dbContext.Database.MigrateAsync();
+
     var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
     string[] roles = { "Admin", "Seller", "Buyer" };
 
