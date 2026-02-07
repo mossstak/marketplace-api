@@ -15,6 +15,11 @@ namespace MarketPlaceApi.Models
         public int Id { get; set; }
         public string Name { get; set; } = "";
     }
+    public class CoffeeOrigin
+    {
+        public int Id { get; set; }
+        public string Name { get; set; } = "";
+    }
     public class CoffeeRegion
     {
         public int Id { get; set; }
@@ -56,13 +61,15 @@ namespace MarketPlaceApi.Models
         public string? Product_Description { get; set; } = "";
 
         // Product Category
-        public ProductCategory Category {get; set;}
+        public ProductCategory Category { get; set; }
 
         // Coffee Metadata
         public int RoastLevelId { get; set; }
         public RoastLevel RoastLevel { get; set; }
         public int CoffeeProcessId { get; set; }
         public CoffeeProcess CoffeeProcess { get; set; }
+        public int OriginId{get; set;}
+        public CoffeeOrigin Origin {get; set;}
         public int RegionId { get; set; }
         public CoffeeRegion Region { get; set; }
         public int ProducerId { get; set; }

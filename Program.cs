@@ -11,8 +11,8 @@ using Stripe;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
-builder.Services.AddOpenApi();
 builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
 
 // Database
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
@@ -87,7 +87,6 @@ builder.Services.AddAuthentication(options =>
 // Add services to the container.
 builder.Services.AddAuthorization();
 builder.Services.AddControllers();
-builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<ICoffeeAttributeService, CoffeeAttributeService>();
 builder.Services.AddScoped<IProductService, MarketPlaceApi.Controllers.ProductService>();
@@ -99,13 +98,15 @@ builder.Services.AddScoped<MarketPlaceApi.Services.TokenService>();
 builder.Services.Configure<CloudinaryOptions>(builder.Configuration.GetSection("Cloudinary"));
 builder.Services.AddScoped<ICloudinarySigner, CloudinarySigner>();
 builder.Services.AddScoped<IProductImagesService, ProductImagesService>();
+builder.Services.AddScoped<ISellerImagesService, SellerImagesService>();
 
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
-    app.MapOpenApi();
+    app.UseSwagger();
+    app.UseSwaggerUI();
 }
 
 app.UseHttpsRedirection();

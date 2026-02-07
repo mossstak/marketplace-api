@@ -26,6 +26,7 @@ namespace MarketPlaceApi.Controllers
         {
             var roastLevel = await _coffeeAttributeService.GetOrCreateRoastLevelAsync(dto.RoastLevelName);
             var process = await _coffeeAttributeService.GetOrCreateCoffeeProcessAsync(dto.CoffeeProcessName);
+            var origin = await _coffeeAttributeService.GetOrCreateOriginAsync(dto.OriginName);
             var region = await _coffeeAttributeService.GetOrCreateRegionAsync(dto.RegionName);
             var producer = await _coffeeAttributeService.GetOrCreateProducerAsync(dto.ProducerName);
             var varietal = await _coffeeAttributeService.GetOrCreateVarietalAsync(dto.VarietalName);
@@ -38,6 +39,7 @@ namespace MarketPlaceApi.Controllers
                 Category = dto.Category,
                 RoastLevelId = roastLevel.Id,
                 CoffeeProcessId = process.Id,
+                OriginId = origin.Id,
                 RegionId = region.Id,
                 ProducerId = producer.Id,
                 VarietalId = varietal.Id,
@@ -63,6 +65,31 @@ namespace MarketPlaceApi.Controllers
             _context.Products.Add(product);
             await _context.SaveChangesAsync();
 
+            if (dto.ImageIds != null && dto.ImageIds.Count > 0)
+            {
+                var imageIds = dto.ImageIds.Distinct().ToList();
+                var sellerImages = await _context.Set<SellerImage>()
+                    .Where(x => x.SellerId == seller.Id && imageIds.Contains(x.Id))
+                    .ToListAsync();
+
+                if (sellerImages.Count != imageIds.Count)
+                    throw new InvalidOperationException("One or more images are not available.");
+
+                var primaryId = dto.PrimaryImageId ?? imageIds.First();
+
+                var productImages = sellerImages.Select(img => new ProductImage
+                {
+                    ProductId = product.Id,
+                    ImageUrl = img.ImageUrl,
+                    PublicId = img.PublicId,
+                    IsPrimary = img.Id == primaryId,
+                    CreatedAtUtc = DateTime.UtcNow
+                }).ToList();
+
+                _context.Set<ProductImage>().AddRange(productImages);
+                await _context.SaveChangesAsync();
+            }
+
             return product;
         }
 
@@ -81,6 +108,8 @@ namespace MarketPlaceApi.Controllers
                 product.RoastLevelId = dto.RoastLevelId.Value;
             if (dto.CoffeeProcessId.HasValue)
                 product.CoffeeProcessId = dto.CoffeeProcessId.Value;
+            if (dto.OriginId.HasValue)
+                product.OriginId = dto.OriginId.Value;
             if (dto.RegionId.HasValue)
                 product.RegionId = dto.RegionId.Value;
             if (dto.ProducerId.HasValue)
@@ -107,20 +136,16 @@ namespace MarketPlaceApi.Controllers
                 p.Product_Description,
                 category = p.Category.ToString(),
                 Seller = new { p.SellerId, p.Seller!.Email, p.Seller.Company_Name },
-                // Variants = p.Variants.Select(v => new
-                // {
-                //     v.Id,
-                //     v.Size,
-                //     v.Price,
-                //     v.Quantity,
-                // }),
-                // producer = p.Producer.Name,
-                // region = p.Region.Name,
-                // coffeeprocess = p.CoffeeProcess.Name,
-                // varietal = p.Varietal.Name,
-                // altitude = p.Altitude.ValueInMasl,
-                // p.TastingNotes,
-                // p.RoastDate
+                Images = _context.ProductImages
+                    .Where(img => img.ProductId == p.Id)
+                    .OrderByDescending(img => img.IsPrimary)
+                    .Select(img => new
+                    {
+                        img.Id,
+                        img.ImageUrl,
+                        img.IsPrimary
+                    })
+                    .ToList()
             }).ToListAsync();
 
             return products.Cast<object>();
@@ -145,6 +170,18 @@ namespace MarketPlaceApi.Controllers
                         v.Price,
                         v.Quantity,
                     }),
+                    Images = _context.ProductImages
+                        .Where(img => img.ProductId == p.Id)
+                        .OrderByDescending(img => img.IsPrimary)
+                        .Select(img => new
+                        {
+                            img.Id,
+                            img.ImageUrl,
+                            img.IsPrimary
+                        })
+                        .ToList(),
+                    roastLevel = p.RoastLevel.Name,
+                    origin = p.Origin.Name,
                     producer = p.Producer.Name,
                     region = p.Region.Name,
                     coffeeprocess = p.CoffeeProcess.Name,
@@ -180,6 +217,18 @@ namespace MarketPlaceApi.Controllers
                         v.Price,
                         v.Quantity,
                     }),
+                    Images = _context.ProductImages
+                        .Where(img => img.ProductId == p.Id)
+                        .OrderByDescending(img => img.IsPrimary)
+                        .Select(img => new
+                        {
+                            img.Id,
+                            img.ImageUrl,
+                            img.IsPrimary
+                        })
+                        .ToList(),
+                    roastLevel = p.RoastLevel.Name,
+                    origin = p.Origin.Name,
                     producer = p.Producer.Name,
                     region = p.Region.Name,
                     coffeeprocess = p.CoffeeProcess.Name,
@@ -204,6 +253,7 @@ namespace MarketPlaceApi.Controllers
             product.Category = dto.Category;
             product.RoastLevelId = dto.RoastLevelId;
             product.CoffeeProcessId = dto.CoffeeProcessId;
+            product.OriginId = dto.OriginId;
             product.RegionId = dto.RegionId;
             product.ProducerId = dto.ProducerId;
             product.VarietalId = dto.VarietalId;

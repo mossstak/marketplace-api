@@ -42,6 +42,19 @@ namespace MarketPlaceApi.Services
             return entity;
         }
 
+        public async Task<CoffeeOrigin> GetOrCreateOriginAsync(string name)
+        {
+            var existing = await _context.CoffeeOrigin
+                .FirstOrDefaultAsync(x => x.Name == name);
+            if (existing != null)
+                return existing;
+
+            var entity = new CoffeeOrigin { Name = name };
+            _context.CoffeeOrigin.Add(entity);
+            await _context.SaveChangesAsync();
+            return entity;
+        }
+
         public async Task<CoffeeRegion> GetOrCreateRegionAsync(string name)
         {
             var existing = await _context.CoffeeRegion

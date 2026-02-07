@@ -9,6 +9,7 @@ namespace MarketPlaceApi.Dtos
     public ProductCategory Category {get; set;}
     public int RoastLevelId { get; set; }
     public int CoffeeProcessId { get; set; }
+    public int OriginId {get; set;}
     public int RegionId { get; set; }
     public int ProducerId { get; set; }
     public int VarietalId { get; set; }

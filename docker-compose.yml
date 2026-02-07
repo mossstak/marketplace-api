@@ -1,27 +1,30 @@
 services:
   postgres:
     image: postgres:16
-    container_name: marketplace-postgres
     environment:
+      POSTGRES_PASSWORD: YourNewStrongPassword
       POSTGRES_DB: MarketPlaceApi
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
     ports:
       - "5433:5432"
     volumes:
-      - pgdata:/var/lib/postgresql/data
+      - marketplace_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d MarketPlaceApi"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
 
   api:
     build: .
-    container_name: marketplace-api
-    depends_on:
-      - postgres
-    environment:
-      ASPNETCORE_ENVIRONMENT: Development
-      ASPNETCORE_URLS: http://+:8080
-      ConnectionStrings__DefaultConnection: Host=postgres;Port=5432;Database=MarketPlaceApi;Username=postgres;Password=postgres
     ports:
-      - "5001:8080"
+      - "5000:80"
+    environment:
+      ConnectionStrings__DefaultConnection: "Host=postgres;Port=5432;Database=MarketPlaceApi;Username=postgres;Password=YourNewStrongPassword"
+      ASPNETCORE_URLS: "http://+:80"
+      ASPNETCORE_ENVIRONMENT: "Development"
+    depends_on:
+      postgres:
+        condition: service_healthy
 
 volumes:
-  pgdata:
+  marketplace_pgdata:

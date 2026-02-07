@@ -82,31 +82,9 @@ namespace MarketPlaceApi.Services
             return result;
         }
 
-        public async Task<IEnumerable<object>> GetMyUsers()
+        public async Task<User?> GetUserByIdAsync(string userId)
         {
-            var users = await _userManager.Users.ToListAsync();
-            var result = new List<object>();
-
-            foreach (var user in users)
-            {
-                var roles = await _userManager.GetRolesAsync(user);
-
-                result.Add(new
-                {
-                    user.Id,
-                    user.First_Name,
-                    user.Last_Name,
-                    Roles = roles,
-                    user.Company_Name,
-                    user.Address_One,
-                    user.Address_Two,
-                    user.City,
-                    user.Country,
-                    user.Postal_Code
-                });
-            }
-
-            return result;
+            return await _userManager.Users.FirstOrDefaultAsync(u => u.Id == userId);
         }
 
         public async Task UpdateUserAsync(string id, UpdateUserDto dto)

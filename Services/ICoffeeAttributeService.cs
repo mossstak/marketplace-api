@@ -10,6 +10,7 @@ namespace MarketPlaceApi.Services
     {
         Task<RoastLevel> GetOrCreateRoastLevelAsync(string name);
         Task<CoffeeProcess> GetOrCreateCoffeeProcessAsync(string name);
+        Task<CoffeeOrigin> GetOrCreateOriginAsync(string name);
         Task<CoffeeRegion> GetOrCreateRegionAsync(string name);
         Task<CoffeeProducer> GetOrCreateProducerAsync(string name);
         Task<CoffeeVarietal> GetOrCreateVarietalAsync(string name);

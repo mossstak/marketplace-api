@@ -3,6 +3,7 @@ using MarketPlaceApi.Models;
 using MarketPlaceApi.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
+using System.Security.Claims;
 using Microsoft.AspNetCore.Mvc;
 
 namespace MarketPlaceApi.Controllers
@@ -86,11 +87,24 @@ namespace MarketPlaceApi.Controllers
             return Ok(users);
         }
 
+        // For DashBoard
+        [Authorize]
         [HttpGet("me")]
-        public async Task<IActionResult> GetMyUsers()
+        public async Task<IActionResult> GetMe()
         {
-            var users = await _userService.GetMyUsers();
-            return Ok(users);
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier)
+           ?? User.FindFirstValue("sub");
+
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized("No User Id claim found.");
+
+            var user = await _userService.GetUserByIdAsync(userId);
+
+            if (user == null)
+                return NotFound();
+
+
+            return Ok(user);
         }
 
         [Authorize(Roles = "Admin")]

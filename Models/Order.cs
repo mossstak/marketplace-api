@@ -14,8 +14,5 @@ namespace MarketPlaceApi.Models
         public DateTime CreatedAt {get; set;} = DateTime.UtcNow;
         public ICollection<OrderItem> Items {get; set;} = new List<OrderItem>();
         public OrderStatus Status {get; set;} = OrderStatus.Pending;
-
-
-
     }
 }

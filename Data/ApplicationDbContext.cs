@@ -14,10 +14,12 @@ namespace MarketPlaceApi.Data
         public DbSet<Product> Products { get; set; }
         public DbSet<ProductVariant> ProductVariants { get; set; }
         public DbSet<ProductImage> ProductImages { get; set; }
+        public DbSet<SellerImage> SellerImages { get; set; }
         public DbSet<Order> Orders { get; set; }
         public DbSet<OrderItem> OrderItems { get; set; }
         public DbSet<RoastLevel> RoastLevel { get; set; }
         public DbSet<CoffeeProcess> CoffeeProcess { get; set; }
+        public DbSet<CoffeeOrigin> CoffeeOrigin {get; set;}
         public DbSet<CoffeeRegion> CoffeeRegion { get; set; }
         public DbSet<CoffeeProducer> CoffeeProducer { get; set; }
         public DbSet<CoffeeVarietal> CoffeeVarietal { get; set; }
