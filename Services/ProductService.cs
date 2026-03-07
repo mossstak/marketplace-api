@@ -5,7 +5,7 @@ using MarketPlaceApi.Services;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.EntityFrameworkCore;
 
-namespace MarketPlaceApi.Controllers
+namespace MarketPlaceApi.Services
 {
     public class ProductService : IProductService
     {
@@ -24,6 +24,16 @@ namespace MarketPlaceApi.Controllers
         //Creates Product
         public async Task<Product> CreateProductAsync(CreateProductDto dto, User seller)
         {
+            // Block sellers from creating products until profile is complete
+            var roasterProfile = await _context.Set<RoasterProfile>()
+                .AsNoTracking()
+                .FirstOrDefaultAsync(rp => rp.UserId == seller.Id);
+
+            if (roasterProfile == null || string.IsNullOrWhiteSpace(roasterProfile.CompanyName))
+            {
+                throw new InvalidOperationException("Complete your roaster profile (company name) before creating products.");
+            }
+
             var roastLevel = await _coffeeAttributeService.GetOrCreateRoastLevelAsync(dto.RoastLevelName);
             var process = await _coffeeAttributeService.GetOrCreateCoffeeProcessAsync(dto.CoffeeProcessName);
             var origin = await _coffeeAttributeService.GetOrCreateOriginAsync(dto.OriginName);
@@ -34,8 +44,8 @@ namespace MarketPlaceApi.Controllers
 
             var product = new Product
             {
-                Product_Name = dto.Product_Name,
-                Product_Description = dto.Product_Description,
+                ProductName = dto.ProductName,
+                ProductDescription = dto.ProductDescription,
                 Category = dto.Category,
                 RoastLevelId = roastLevel.Id,
                 CoffeeProcessId = process.Id,
@@ -98,10 +108,10 @@ namespace MarketPlaceApi.Controllers
         {
             var product = await _context.Products.FindAsync(id) ?? throw new KeyNotFoundException("Product Not Found");
 
-            if (dto.Product_Name != null)
-                product.Product_Name = dto.Product_Name;
-            if (dto.Product_Description != null)
-                product.Product_Description = dto.Product_Description;
+            if (dto.ProductName != null)
+                product.ProductName = dto.ProductName;
+            if (dto.ProductDescription != null)
+                product.ProductDescription = dto.ProductDescription;
             if (dto.Category.HasValue)
                 product.Category = dto.Category.Value;
             if (dto.RoastLevelId.HasValue)
@@ -132,10 +142,10 @@ namespace MarketPlaceApi.Controllers
             var products = await _context.Products.Select(p => new
             {
                 p.Id,
-                p.Product_Name,
-                p.Product_Description,
+                p.ProductName,
+                p.ProductDescription,
                 category = p.Category.ToString(),
-                Seller = new { p.SellerId, p.Seller!.Email, p.Seller.Company_Name },
+                Seller = new { p.SellerId},
                 Images = _context.ProductImages
                     .Where(img => img.ProductId == p.Id)
                     .OrderByDescending(img => img.IsPrimary)
@@ -159,10 +169,10 @@ namespace MarketPlaceApi.Controllers
                 .Select(p => new
                 {
                     p.Id,
-                    p.Product_Name,
-                    p.Product_Description,
+                    p.ProductName,
+                    p.ProductDescription,
                     category = p.Category.ToString(),
-                    Seller = new { p.SellerId, p.Seller!.Email, p.Seller.Company_Name },
+                    Seller = new { p.SellerId },
                     Variants = p.Variants.Select(v => new
                     {
                         v.Id,
@@ -184,7 +194,7 @@ namespace MarketPlaceApi.Controllers
                     origin = p.Origin.Name,
                     producer = p.Producer.Name,
                     region = p.Region.Name,
-                    coffeeprocess = p.CoffeeProcess.Name,
+                    coffeeProcess = p.CoffeeProcess.Name,
                     varietal = p.Varietal.Name,
                     altitude = p.Altitude.ValueInMasl,
                     p.TastingNotes,
@@ -206,10 +216,10 @@ namespace MarketPlaceApi.Controllers
                 .Select(p => new
                 {
                     p.Id,
-                    p.Product_Name,
-                    p.Product_Description,
+                    p.ProductName,
+                    p.ProductDescription,
                     category = p.Category.ToString(),
-                    Seller = new { p.SellerId, p.Seller!.Email, p.Seller.Company_Name },
+                    Seller = new { p.SellerId },
                     Variants = p.Variants.Select(v => new
                     {
                         v.Id,
@@ -231,7 +241,7 @@ namespace MarketPlaceApi.Controllers
                     origin = p.Origin.Name,
                     producer = p.Producer.Name,
                     region = p.Region.Name,
-                    coffeeprocess = p.CoffeeProcess.Name,
+                    coffeeProcess = p.CoffeeProcess.Name,
                     varietal = p.Varietal.Name,
                     altitude = p.Altitude.ValueInMasl,
                     p.TastingNotes,
@@ -248,8 +258,8 @@ namespace MarketPlaceApi.Controllers
             var product = await _context.Products
                 .Include(p => p.Variants)
                 .FirstOrDefaultAsync(p => p.Id == id) ?? throw new KeyNotFoundException("Product Not Found");
-            product.Product_Name = dto.Product_Name;
-            product.Product_Description = dto.Product_Description;
+            product.ProductName = dto.ProductName;
+            product.ProductDescription = dto.ProductDescription;
             product.Category = dto.Category;
             product.RoastLevelId = dto.RoastLevelId;
             product.CoffeeProcessId = dto.CoffeeProcessId;

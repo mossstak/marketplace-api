@@ -11,4 +11,3 @@ obj/
 
 # Ignore secrets
 appsettings.Development.json
-appsettings.Local.json

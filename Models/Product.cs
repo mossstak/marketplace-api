@@ -57,8 +57,8 @@ namespace MarketPlaceApi.Models
 
         // Product Main
         public int Id { get; set; }
-        public string Product_Name { get; set; } = "";
-        public string? Product_Description { get; set; } = "";
+        public string ProductName { get; set; } = "";
+        public string? ProductDescription { get; set; } = "";
 
         // Product Category
         public ProductCategory Category { get; set; }

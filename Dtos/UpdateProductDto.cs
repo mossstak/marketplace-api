@@ -4,8 +4,8 @@ namespace MarketPlaceApi.Dtos
 {
     public class UpdateProductDto
     {
-    public string Product_Name { get; set; }
-    public string? Product_Description { get; set; }
+    public string ProductName { get; set; }
+    public string? ProductDescription { get; set; }
     public ProductCategory Category {get; set;}
     public int RoastLevelId { get; set; }
     public int CoffeeProcessId { get; set; }

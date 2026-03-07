@@ -24,14 +24,13 @@ namespace MarketPlaceApi.Services
             {
                 UserName = dto.Email,
                 Email = dto.Email,
-                First_Name = dto.First_Name,
-                Last_Name = dto.Last_Name,
-                Company_Name = dto.Company_Name,
-                Address_One = dto.Address_One,
-                Address_Two = dto.Address_Two,
+                FirstName = dto.FirstName,
+                LastName = dto.LastName,
+                AddressOne = dto.AddressOne,
+                AddressTwo = dto.AddressTwo,
                 City = dto.City,
                 Country = dto.Country,
-                Postal_Code = dto.Postal_Code
+                PostalCode = dto.PostalCode
             };
 
             var createResult = await _userManager.CreateAsync(user, dto.Password);
@@ -71,10 +70,9 @@ namespace MarketPlaceApi.Services
                 result.Add(new
                 {
                     user.Id,
-                    user.First_Name,
-                    user.Last_Name,
+                    user.FirstName,
+                    user.LastName,
                     user.Email,
-                    user.Company_Name,
                     Roles = roles
                 });
             }
@@ -90,17 +88,15 @@ namespace MarketPlaceApi.Services
         public async Task UpdateUserAsync(string id, UpdateUserDto dto)
         {
             var user = await _userManager.Users.FirstOrDefaultAsync(u => u.Id == id.ToString()) ?? throw new KeyNotFoundException("User Not Found");
-            user.First_Name = dto.FirstName;
-            user.Last_Name = dto.LastName;
+            user.FirstName = dto.FirstName;
+            user.LastName = dto.LastName;
             user.Email = dto.Email;
 
-            user.Address_One = dto.Address_One;
-            user.Address_Two = dto.Address_Two;
+            user.AddressOne = dto.AddressOne;
+            user.AddressTwo = dto.AddressTwo;
             user.City = dto.City;
             user.Country = dto.Country;
-            user.Postal_Code = dto.Postal_Code;
-
-            user.Company_Name = dto.Company_Name;
+            user.PostalCode = dto.PostalCode;
 
             var result = await _userManager.UpdateAsync(user);
             if (!result.Succeeded)
@@ -111,19 +107,19 @@ namespace MarketPlaceApi.Services
         {
             var user = await _userManager.Users.FirstOrDefaultAsync(u => u.Id == id.ToString()) ?? throw new KeyNotFoundException("User Not Found");
             if (!string.IsNullOrWhiteSpace(dto.FirstName))
-                user.First_Name = dto.FirstName;
+                user.FirstName = dto.FirstName;
 
             if (!string.IsNullOrWhiteSpace(dto.LastName))
-                user.Last_Name = dto.LastName;
+                user.LastName = dto.LastName;
 
             if (!string.IsNullOrWhiteSpace(dto.Email))
                 user.Email = dto.Email;
 
-            if (!string.IsNullOrWhiteSpace(dto.Address_One))
-                user.Address_One = dto.Address_One;
+            if (!string.IsNullOrWhiteSpace(dto.AddressOne))
+                user.AddressOne = dto.AddressOne;
 
-            if (!string.IsNullOrWhiteSpace(dto.Address_Two))
-                user.Address_Two = dto.Address_Two;
+            if (!string.IsNullOrWhiteSpace(dto.AddressTwo))
+                user.AddressTwo = dto.AddressTwo;
 
             if (!string.IsNullOrWhiteSpace(dto.City))
                 user.City = dto.City;
@@ -131,11 +127,8 @@ namespace MarketPlaceApi.Services
             if (!string.IsNullOrWhiteSpace(dto.Country))
                 user.Country = dto.Country;
 
-            if (!string.IsNullOrWhiteSpace(dto.Postal_Code))
-                user.Postal_Code = dto.Postal_Code;
-
-            if (!string.IsNullOrWhiteSpace(dto.Company_Name))
-                user.Company_Name = dto.Company_Name;
+            if (!string.IsNullOrWhiteSpace(dto.PostalCode))
+                user.PostalCode = dto.PostalCode;
 
             var result = await _userManager.UpdateAsync(user);
             if (!result.Succeeded)

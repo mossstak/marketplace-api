@@ -3,6 +3,7 @@ using System;
 using MarketPlaceApi.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace MarketPlaceApi.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260210231340_RemoveCompanyNameFromUser")]
+    partial class RemoveCompanyNameFromUser
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -203,10 +206,10 @@ namespace MarketPlaceApi.Migrations
                     b.Property<int>("ProducerId")
                         .HasColumnType("integer");
 
-                    b.Property<string>("ProductDescription")
+                    b.Property<string>("Product_Description")
                         .HasColumnType("text");
 
-                    b.Property<string>("ProductName")
+                    b.Property<string>("Product_Name")
                         .IsRequired()
                         .HasColumnType("text");
 
@@ -339,7 +342,7 @@ namespace MarketPlaceApi.Migrations
                     b.Property<string>("City")
                         .HasColumnType("text");
 
-                    b.Property<string>("CompanyName")
+                    b.Property<string>("Company_Name")
                         .HasColumnType("text");
 
                     b.Property<string>("Country")
@@ -414,13 +417,16 @@ namespace MarketPlaceApi.Migrations
                     b.Property<int>("AccessFailedCount")
                         .HasColumnType("integer");
 
-                    b.Property<string>("AddressOne")
+                    b.Property<string>("Address_One")
                         .HasColumnType("text");
 
-                    b.Property<string>("AddressTwo")
+                    b.Property<string>("Address_Two")
                         .HasColumnType("text");
 
                     b.Property<string>("City")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Company_Name")
                         .HasColumnType("text");
 
                     b.Property<string>("ConcurrencyStamp")
@@ -437,10 +443,10 @@ namespace MarketPlaceApi.Migrations
                     b.Property<bool>("EmailConfirmed")
                         .HasColumnType("boolean");
 
-                    b.Property<string>("FirstName")
+                    b.Property<string>("First_Name")
                         .HasColumnType("text");
 
-                    b.Property<string>("LastName")
+                    b.Property<string>("Last_Name")
                         .HasColumnType("text");
 
                     b.Property<bool>("LockoutEnabled")
@@ -466,7 +472,7 @@ namespace MarketPlaceApi.Migrations
                     b.Property<bool>("PhoneNumberConfirmed")
                         .HasColumnType("boolean");
 
-                    b.Property<string>("PostalCode")
+                    b.Property<string>("Postal_Code")
                         .HasColumnType("text");
 
                     b.Property<string>("SecurityStamp")

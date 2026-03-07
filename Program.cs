@@ -84,13 +84,29 @@ builder.Services.AddAuthentication(options =>
     };
 });
 
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy("VerifiedSeller", policy =>
+    {
+        policy.RequireRole("Seller");
+        policy.RequireClaim("is_verified", "true");
+    });
+});
+
 // Add services to the container.
 builder.Services.AddAuthorization();
 builder.Services.AddControllers();
+builder.Services.AddControllers()
+    .AddJsonOptions(o =>
+    {
+        o.JsonSerializerOptions.PropertyNamingPolicy =
+            System.Text.Json.JsonNamingPolicy.CamelCase;
+    });
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<ICoffeeAttributeService, CoffeeAttributeService>();
-builder.Services.AddScoped<IProductService, MarketPlaceApi.Controllers.ProductService>();
+builder.Services.AddScoped<IProductService, MarketPlaceApi.Services.ProductService>();
 builder.Services.AddScoped<IOrderService, OrderService>();
+builder.Services.AddScoped<IRoasterProfileService, RoasterProfileService>();
 builder.Services.AddScoped<MarketPlaceApi.Services.TokenService>();
 
 

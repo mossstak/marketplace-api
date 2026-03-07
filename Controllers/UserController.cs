@@ -33,18 +33,12 @@ namespace MarketPlaceApi.Controllers
             if (dto.Password != dto.ConfirmPassword)
                 return BadRequest("Passwords do not match.");
 
-            // 1) Validate based on role
-            if (dto.Role == "Seller" && string.IsNullOrWhiteSpace(dto.Company_Name))
-            {
-                return BadRequest("Company name is required for sellers.");
-            }
-
             if ((dto.Role == "Seller" || dto.Role == "Buyer"))
             {
-                if (string.IsNullOrWhiteSpace(dto.Address_One)
+                if (string.IsNullOrWhiteSpace(dto.AddressOne)
                     || string.IsNullOrWhiteSpace(dto.City)
                     || string.IsNullOrWhiteSpace(dto.Country)
-                    || string.IsNullOrWhiteSpace(dto.Postal_Code))
+                    || string.IsNullOrWhiteSpace(dto.PostalCode))
                 {
                     return BadRequest("Address fields are required for buyers and sellers.");
                 }
@@ -107,7 +101,7 @@ namespace MarketPlaceApi.Controllers
             return Ok(user);
         }
 
-        [Authorize(Roles = "Admin")]
+        [Authorize]
         [HttpPatch("edituser/{id}")]
         public async Task<IActionResult> EditUser(string id, [FromBody] EditUserDto dto)
         {
@@ -122,7 +116,7 @@ namespace MarketPlaceApi.Controllers
             }
         }
 
-        [Authorize(Roles = "Admin")]
+        [Authorize]
         [HttpPut("updateuser/{id}")]
         public async Task<IActionResult> UpdateUser(string id, [FromBody] UpdateUserDto dto)
         {

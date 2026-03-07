@@ -29,6 +29,12 @@ namespace MarketPlaceApi.Services
 
             };
 
+            if (roles.Contains("Seller"))
+            {
+                var isVerified = user.RoasterProfile?.IsVerified ?? false;
+                claims.Add(new Claim("is_verified", isVerified ? "true" : "false"));
+            }
+
             foreach (var role in roles)
             {
                 claims.Add(new Claim(ClaimTypes.Role, role));
@@ -46,5 +52,6 @@ namespace MarketPlaceApi.Services
 
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
+
     }
 }
