@@ -6,7 +6,8 @@ namespace MarketPlaceApi.Dtos
     {
         public string? ProductName { get; set; }
         public string? ProductDescription { get; set; } = "";
-        public ProductCategory Category {get; set;}
+        public ProductCategory Category { get; set; }
+        public BrewingMethod Grind { get; set; }
         public string RoastLevelName { get; set; } = "";
         public string CoffeeProcessName { get; set; } = "";
         public string OriginName { get; set; } = "";

@@ -63,6 +63,9 @@ namespace MarketPlaceApi.Models
         // Product Category
         public ProductCategory Category { get; set; }
 
+        // Brewing Method
+        public BrewingMethod Grind {get; set;}
+
         // Coffee Metadata
         public int RoastLevelId { get; set; }
         public RoastLevel RoastLevel { get; set; }

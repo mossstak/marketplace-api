@@ -47,6 +47,7 @@ namespace MarketPlaceApi.Services
                 ProductName = dto.ProductName,
                 ProductDescription = dto.ProductDescription,
                 Category = dto.Category,
+                Grind = dto.Grind,
                 RoastLevelId = roastLevel.Id,
                 CoffeeProcessId = process.Id,
                 OriginId = origin.Id,
@@ -114,6 +115,8 @@ namespace MarketPlaceApi.Services
                 product.ProductDescription = dto.ProductDescription;
             if (dto.Category.HasValue)
                 product.Category = dto.Category.Value;
+            if (dto.Grind.HasValue)
+                product.Grind = dto.Grind.Value;
             if (dto.RoastLevelId.HasValue)
                 product.RoastLevelId = dto.RoastLevelId.Value;
             if (dto.CoffeeProcessId.HasValue)
@@ -145,6 +148,7 @@ namespace MarketPlaceApi.Services
                 p.ProductName,
                 p.ProductDescription,
                 category = p.Category.ToString(),
+                grind = p.Grind.ToString(),
                 Seller = new { p.SellerId},
                 Images = _context.ProductImages
                     .Where(img => img.ProductId == p.Id)
@@ -172,6 +176,7 @@ namespace MarketPlaceApi.Services
                     p.ProductName,
                     p.ProductDescription,
                     category = p.Category.ToString(),
+                    grind = p.Grind.ToString(),
                     Seller = new { p.SellerId },
                     Variants = p.Variants.Select(v => new
                     {
@@ -219,6 +224,7 @@ namespace MarketPlaceApi.Services
                     p.ProductName,
                     p.ProductDescription,
                     category = p.Category.ToString(),
+                    grind = p.Grind.ToString(),
                     Seller = new { p.SellerId },
                     Variants = p.Variants.Select(v => new
                     {

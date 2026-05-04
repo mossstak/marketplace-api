@@ -7,6 +7,7 @@ namespace MarketPlaceApi.Dtos
         public string? ProductName { get; set; }
         public string? ProductDescription { get; set; }
         public ProductCategory? Category { get; set; }
+        public BrewingMethod? Grind { get; set; }
         public int? RoastLevelId { get; set; }
         public int? CoffeeProcessId { get; set; }
         public int? OriginId {get; set;}
