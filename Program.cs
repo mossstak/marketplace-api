@@ -150,6 +150,9 @@ using (var scope = app.Services.CreateScope())
         if (!await roleManager.RoleExistsAsync(role))
             await roleManager.CreateAsync(new IdentityRole(role));
     }
+
+    var userManager = scope.ServiceProvider.GetRequiredService<UserManager<User>>();
+    await MarketPlaceApi.Data.DataSeeder.SeedAsync(dbContext, userManager);
 }
 
 app.Run();
