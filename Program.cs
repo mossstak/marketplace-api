@@ -6,13 +6,22 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi;
 using Npgsql;
 using Stripe;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(
+    options =>
+    {
+        options.SwaggerDoc("v1", new OpenApiInfo{
+            Title = "Roaster's Market",
+            Version = "1.0",
+            Description = "The API for Roaster's Market"
+        });
+    });
 
 // Database
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
@@ -135,7 +144,7 @@ app.MapControllers();
 app.MapGet("/", () => "API is running!");
 
 // your endpoints
-app.MapGet("/Products/all", () => Results.Ok(new[] { new { Id = 1, Name = "Test" } }));
+// app.MapGet("/Products/all", () => Results.Ok(new[] { new { Id = 1, Name = "Test" } }));
 
 using (var scope = app.Services.CreateScope())
 {

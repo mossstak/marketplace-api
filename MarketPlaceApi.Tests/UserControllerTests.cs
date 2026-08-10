@@ -96,8 +96,9 @@ public class UserControllerTests
     {
         var dto = new RegisterDto
         {
-            Email = "admin@test.com", Password = "Password1!", ConfirmPassword = "Password1!",
-            FirstName = "A", LastName = "B", Role = "Admin"
+            Email = "buyer@test.com", Password = "Password1!", ConfirmPassword = "Password1!",
+            FirstName = "A", LastName = "B", Role = "Buyer",
+            AddressOne = "1 Main St", City = "London", Country = "UK", PostalCode = "E1 1AA"
         };
         _mockUserService
             .Setup(s => s.Register(It.IsAny<RegisterDto>()))
@@ -107,6 +108,39 @@ public class UserControllerTests
 
         var bad = Assert.IsType<BadRequestObjectResult>(result);
         Assert.Equal("User creation failed.", bad.Value);
+    }
+
+    [Fact]
+    public async Task Register_ReturnsBadRequest_WhenRoleIsAdmin()
+    {
+        // Admin accounts must never be self-service registered.
+        var dto = new RegisterDto
+        {
+            Email = "wannabe-admin@test.com", Password = "Password1!", ConfirmPassword = "Password1!",
+            FirstName = "A", LastName = "B", Role = "Admin"
+        };
+
+        var result = await _controller.Register(dto);
+
+        var bad = Assert.IsType<BadRequestObjectResult>(result);
+        Assert.Equal("Role must be Seller or Buyer.", bad.Value);
+        _mockUserService.Verify(s => s.Register(It.IsAny<RegisterDto>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task Register_ReturnsBadRequest_WhenRoleIsUnrecognized()
+    {
+        var dto = new RegisterDto
+        {
+            Email = "weird@test.com", Password = "Password1!", ConfirmPassword = "Password1!",
+            FirstName = "A", LastName = "B", Role = "SuperUser"
+        };
+
+        var result = await _controller.Register(dto);
+
+        var bad = Assert.IsType<BadRequestObjectResult>(result);
+        Assert.Equal("Role must be Seller or Buyer.", bad.Value);
+        _mockUserService.Verify(s => s.Register(It.IsAny<RegisterDto>()), Times.Never);
     }
 
     // ── Login ─────────────────────────────────────────────────────────────────
@@ -169,22 +203,85 @@ public class UserControllerTests
     [Fact]
     public async Task GetMe_ReturnsOk_WhenUserExists()
     {
-        var user = new User { Id = "user-abc", Email = "me@test.com" };
+        var user = new User { Id = "user-abc", Email = "me@test.com", FirstName = "Ann", PasswordHash = "super-secret-hash" };
         SetUserClaim(user.Id);
         _mockUserService.Setup(s => s.GetUserByIdAsync(user.Id)).ReturnsAsync(user);
+        _mockUserManager.Setup(m => m.GetRolesAsync(user)).ReturnsAsync(new List<string> { "Buyer" });
 
         var result = await _controller.GetMe();
 
         var ok = Assert.IsType<OkObjectResult>(result);
-        Assert.Equal(user, ok.Value);
+        Assert.NotNull(ok.Value);
+
+        var valueType = ok.Value!.GetType();
+        Assert.Equal(user.Id, valueType.GetProperty("Id")?.GetValue(ok.Value));
+        Assert.Equal(user.FirstName, valueType.GetProperty("FirstName")?.GetValue(ok.Value));
+
+        // Regression guard for the /me PasswordHash leak: the response must never
+        // expose the raw Identity entity or any of its sensitive fields.
+        Assert.Null(valueType.GetProperty("PasswordHash"));
+        Assert.Null(valueType.GetProperty("SecurityStamp"));
+    }
+
+    // ── EditUser / UpdateUser authorization ─────────────────────────────────────
+
+    [Fact]
+    public async Task EditUser_ReturnsForbid_WhenEditingAnotherUsersProfile()
+    {
+        SetUserClaim("user-1");
+        var dto = new EditUserDto { FirstName = "Hacked" };
+
+        var result = await _controller.EditUser("user-2", dto);
+
+        Assert.IsType<ForbidResult>(result);
+        _mockUserService.Verify(s => s.EditUserAsync(It.IsAny<string>(), It.IsAny<EditUserDto>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task EditUser_ReturnsOk_WhenEditingOwnProfile()
+    {
+        SetUserClaim("user-1");
+        var dto = new EditUserDto { FirstName = "Self" };
+
+        var result = await _controller.EditUser("user-1", dto);
+
+        Assert.IsType<OkObjectResult>(result);
+        _mockUserService.Verify(s => s.EditUserAsync("user-1", dto), Times.Once);
+    }
+
+    [Fact]
+    public async Task EditUser_ReturnsOk_WhenAdminEditsAnotherUsersProfile()
+    {
+        SetUserClaim("admin-1", "Admin");
+        var dto = new EditUserDto { FirstName = "ByAdmin" };
+
+        var result = await _controller.EditUser("user-2", dto);
+
+        Assert.IsType<OkObjectResult>(result);
+        _mockUserService.Verify(s => s.EditUserAsync("user-2", dto), Times.Once);
+    }
+
+    [Fact]
+    public async Task UpdateUser_ReturnsForbid_WhenUpdatingAnotherUsersProfile()
+    {
+        SetUserClaim("user-1");
+        var dto = new UpdateUserDto { FirstName = "Hacked", LastName = "Hacker", Email = "h@test.com" };
+
+        var result = await _controller.UpdateUser("user-2", dto);
+
+        Assert.IsType<ForbidResult>(result);
+        _mockUserService.Verify(s => s.UpdateUserAsync(It.IsAny<string>(), It.IsAny<UpdateUserDto>()), Times.Never);
     }
 
     // ── helpers ───────────────────────────────────────────────────────────────
 
-    private void SetUserClaim(string userId)
+    private void SetUserClaim(string userId, string? role = null)
     {
-        var identity = new ClaimsIdentity(
-            new[] { new Claim(ClaimTypes.NameIdentifier, userId) }, "TestAuth");
+        var claims = new List<Claim> { new(ClaimTypes.NameIdentifier, userId) };
+        if (role != null)
+            claims.Add(new Claim(ClaimTypes.Role, role));
+
+        var identity = new ClaimsIdentity(claims, "TestAuth");
         _controller.ControllerContext = new ControllerContext
         {
             HttpContext = new DefaultHttpContext { User = new ClaimsPrincipal(identity) }

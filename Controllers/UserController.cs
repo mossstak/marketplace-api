@@ -33,17 +33,19 @@ namespace MarketPlaceApi.Controllers
             if (dto.Password != dto.ConfirmPassword)
                 return BadRequest("Passwords do not match.");
 
-            if ((dto.Role == "Seller" || dto.Role == "Buyer"))
+            if (dto.Role != "Seller" && dto.Role != "Buyer")
             {
-                if (string.IsNullOrWhiteSpace(dto.AddressOne)
-                    || string.IsNullOrWhiteSpace(dto.City)
-                    || string.IsNullOrWhiteSpace(dto.Country)
-                    || string.IsNullOrWhiteSpace(dto.PostalCode))
-                {
-                    return BadRequest("Address fields are required for buyers and sellers.");
-                }
+                // Admin accounts must not be self-service registered.
+                return BadRequest("Role must be Seller or Buyer.");
             }
-            // For Admin: no address / company required
+
+            if (string.IsNullOrWhiteSpace(dto.AddressOne)
+                || string.IsNullOrWhiteSpace(dto.City)
+                || string.IsNullOrWhiteSpace(dto.Country)
+                || string.IsNullOrWhiteSpace(dto.PostalCode))
+            {
+                return BadRequest("Address fields are required for buyers and sellers.");
+            }
             try
             {
                 var user = await _userService.Register(dto);
@@ -86,8 +88,7 @@ namespace MarketPlaceApi.Controllers
         [HttpGet("me")]
         public async Task<IActionResult> GetMe()
         {
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier)
-           ?? User.FindFirstValue("sub");
+            var userId = GetCurrentUserId();
 
             if (string.IsNullOrEmpty(userId))
                 return Unauthorized("No User Id claim found.");
@@ -97,14 +98,30 @@ namespace MarketPlaceApi.Controllers
             if (user == null)
                 return NotFound();
 
+            var roles = await _userManager.GetRolesAsync(user);
 
-            return Ok(user);
+            return Ok(new
+            {
+                user.Id,
+                user.FirstName,
+                user.LastName,
+                user.Email,
+                user.AddressOne,
+                user.AddressTwo,
+                user.City,
+                user.Country,
+                user.PostalCode,
+                Roles = roles
+            });
         }
 
         [Authorize]
         [HttpPatch("edituser/{id}")]
         public async Task<IActionResult> EditUser(string id, [FromBody] EditUserDto dto)
         {
+            if (!IsSelfOrAdmin(id))
+                return Forbid();
+
             try
             {
                 await _userService.EditUserAsync(id, dto);
@@ -120,6 +137,9 @@ namespace MarketPlaceApi.Controllers
         [HttpPut("updateuser/{id}")]
         public async Task<IActionResult> UpdateUser(string id, [FromBody] UpdateUserDto dto)
         {
+            if (!IsSelfOrAdmin(id))
+                return Forbid();
+
             try
             {
                 await _userService.UpdateUserAsync(id, dto);
@@ -150,7 +170,7 @@ namespace MarketPlaceApi.Controllers
         [HttpPost("change-password")]
         public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordDto dto)
         {
-            var userId = User.FindFirst("sub")?.Value;
+            var userId = GetCurrentUserId();
             if (userId == null)
                 return Unauthorized();
 
@@ -180,6 +200,11 @@ namespace MarketPlaceApi.Controllers
             }
         }
 
+        private string? GetCurrentUserId() =>
+            User.FindFirstValue(ClaimTypes.NameIdentifier) ?? User.FindFirstValue("sub");
+
+        private bool IsSelfOrAdmin(string targetUserId) =>
+            string.Equals(GetCurrentUserId(), targetUserId, StringComparison.Ordinal) || User.IsInRole("Admin");
 
     }
 }
