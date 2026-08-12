@@ -27,9 +27,14 @@ POST {{MarketPlaceApi_HostAddress}}/User/Login
 Content-Type: application/json
 
 {
-  "email": "MarkSmith@gmail.com",
-  "password": "Tiger_1234"
+  "email": "Mostak1993@gmail.com",
+  "password": "MBdk6&N7Tl0P3n*Czi%="
 }
+
+### Get User Profile
+GET {{MarketPlaceApi_HostAddress}}/User/all
+Accept: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI0MTY2NTY0OC0xMjA3LTQxYmItYTQ1Yi04NWEzMjYwNGNmYjciLCJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1laWRlbnRpZmllciI6IjQxNjY1NjQ4LTEyMDctNDFiYi1hNDViLTg1YTMyNjA0Y2ZiNyIsImVtYWlsIjoibW9zdGFrMTk5M0BnbWFpbC5jb20iLCJuYW1lIjoibW9zdGFrMTk5M0BnbWFpbC5jb20iLCJodHRwOi8vc2NoZW1hcy5taWNyb3NvZnQuY29tL3dzLzIwMDgvMDYvaWRlbnRpdHkvY2xhaW1zL3JvbGUiOiJBZG1pbiIsImV4cCI6MTc4NjUzODE5NywiaXNzIjoiTWFya2V0UGxhY2VBcGkiLCJhdWQiOiJNYXJrZXRQbGFjZUFwaVVzZXJzIn0.qUUvHFWJSVY1FDyCEk4t7wYhFXtRh_wfcRTIsnJSnZM
 
 ### Add Product
 POST {{MarketPlaceApi_HostAddress}}/Product/addproduct
@@ -97,3 +102,4 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJlMGYxZjJkM
   "category": 1,
   "tastingNotes": "Juicy, fruity, even better now"
 }
+

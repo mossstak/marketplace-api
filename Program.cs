@@ -8,7 +8,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi;
 using Npgsql;
-using Stripe;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -44,9 +43,6 @@ catch
     // If parsing fails, let EF/Npgsql throw the original exception.
 }
 builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseNpgsql(connectionString));
-
-//Stripe Config
-StripeConfiguration.ApiKey = builder.Configuration["Stripe:SecretKey"];
 
 //Cors-Configuration
 builder.Services.AddCors(options =>
@@ -116,6 +112,7 @@ builder.Services.AddScoped<ICoffeeAttributeService, CoffeeAttributeService>();
 builder.Services.AddScoped<IProductService, MarketPlaceApi.Services.ProductService>();
 builder.Services.AddScoped<IOrderService, OrderService>();
 builder.Services.AddScoped<IRoasterProfileService, RoasterProfileService>();
+builder.Services.AddScoped<IStripeConnectService, StripeConnectService>();
 builder.Services.AddScoped<MarketPlaceApi.Services.TokenService>();
 
 

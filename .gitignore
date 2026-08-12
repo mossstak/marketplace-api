@@ -17,6 +17,8 @@ out/
 TestResults/
 *.nupkg
 
+Info.md
+
 # Secrets / environment-specific config
 appsettings.Development.json
 appsettings.Local.json

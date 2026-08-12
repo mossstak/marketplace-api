@@ -22,6 +22,10 @@ namespace MarketPlaceApi.Models
     public bool IsVerified { get; set; }
     public DateTime? VerifiedAtUtc { get; set; }
 
+    // Stripe Connect Payouts
+    public string? StripeAccountId { get; set; }
+    public bool PayoutsEnabled { get; set; }
+
     // Socials (simple version: columns)
     public string? WebsiteUrl { get; set; }
     public string? InstagramUrl { get; set; }
