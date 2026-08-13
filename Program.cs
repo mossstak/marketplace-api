@@ -15,7 +15,8 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(
     options =>
     {
-        options.SwaggerDoc("v1", new OpenApiInfo{
+        options.SwaggerDoc("v1", new OpenApiInfo
+        {
             Title = "Roaster's Market",
             Version = "1.0",
             Description = "The API for Roaster's Market"
@@ -162,6 +163,27 @@ using (var scope = app.Services.CreateScope())
 
     var userManager = scope.ServiceProvider.GetRequiredService<UserManager<User>>();
     await MarketPlaceApi.Data.DataSeeder.SeedAsync(dbContext, userManager);
+
+    var adminEmail = "mostak1993@gmail.com";
+    var adminUser = await userManager.FindByEmailAsync(adminEmail);
+
+    if (adminUser == null)
+    {
+        var newAdmin = new User
+        {
+            UserName = adminEmail,
+            Email = adminEmail,
+            EmailConfirmed = true,
+            FirstName = "Mostak",
+            LastName = "Khan"
+        };
+
+        var result = await userManager.CreateAsync(newAdmin, "MBdk6&N7Tl0P3n*Czi%=");
+        if (result.Succeeded)
+        {
+            await userManager.AddToRoleAsync(newAdmin, "Admin");
+        }
+    }
 }
 
 app.Run();
