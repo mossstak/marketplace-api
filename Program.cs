@@ -125,11 +125,14 @@ builder.Services.AddScoped<ISellerImagesService, SellerImagesService>();
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
+// Allow Swagger in Production/Render
+app.UseSwagger();
+app.UseSwaggerUI(c =>
 {
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
+    c.SwaggerEndpoint("/swagger/v1/swagger.json", "My API V1");
+    // Optional: Serve Swagger at root (https://your-app.onrender.com/)
+    // c.RoutePrefix = string.Empty; 
+});
 
 app.UseHttpsRedirection();
 
