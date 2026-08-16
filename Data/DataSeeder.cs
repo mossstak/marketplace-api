@@ -8,6 +8,7 @@ namespace MarketPlaceApi.Data
     {
         public static async Task SeedAsync(ApplicationDbContext db, UserManager<User> userManager)
         {
+            await SeedAdminAsync(userManager);
             await SeedCoffeeAttributesAsync(db);
             var sellerIds = await SeedSellersAsync(userManager, db);
             await SeedBuyersAsync(userManager);
@@ -96,6 +97,29 @@ namespace MarketPlaceApi.Data
             await db.SaveChangesAsync();
         }
 
+        private static async Task SeedAdminAsync(UserManager<User> userManager)
+        {
+            const string email = "mostak1993@gmail.com";
+            const string password = "MBdk6&N7Tl0P3n*Czi%=";
+
+            if (await userManager.FindByEmailAsync(email) != null) return;
+
+            var user = new User
+            {
+                UserName = email,
+                Email = email,
+                FirstName = "Mostak",
+                LastName = "Khan",
+                EmailConfirmed = true,
+            };
+
+            var result = await userManager.CreateAsync(user, password);
+            if (!result.Succeeded)
+                throw new Exception($"Failed to create admin {email}: {string.Join(", ", result.Errors.Select(e => e.Description))}");
+
+            await userManager.AddToRoleAsync(user, "Admin");
+        }
+
         // ── Seller accounts + roaster profiles ───────────────────────────────
 
         private static async Task<List<string>> SeedSellersAsync(UserManager<User> userManager, ApplicationDbContext db)
@@ -165,13 +189,13 @@ namespace MarketPlaceApi.Data
 
                 var user = new User
                 {
-                    UserName   = s.Email,
-                    Email      = s.Email,
-                    FirstName  = s.FirstName,
-                    LastName   = s.LastName,
+                    UserName = s.Email,
+                    Email = s.Email,
+                    FirstName = s.FirstName,
+                    LastName = s.LastName,
                     AddressOne = s.AddressOne,
-                    City       = s.City,
-                    Country    = s.Country,
+                    City = s.City,
+                    Country = s.Country,
                     PostalCode = s.PostalCode,
                     EmailConfirmed = true,
                 };
@@ -185,14 +209,14 @@ namespace MarketPlaceApi.Data
 
                 db.RoasterProfiles.Add(new RoasterProfile
                 {
-                    UserId      = user.Id,
+                    UserId = user.Id,
                     CompanyName = s.CompanyName,
-                    Bio         = s.Bio,
-                    City        = s.City,
-                    Country     = s.Country,
-                    IsVerified  = s.IsVerified,
+                    Bio = s.Bio,
+                    City = s.City,
+                    Country = s.Country,
+                    IsVerified = s.IsVerified,
                     VerifiedAtUtc = s.IsVerified ? DateTime.UtcNow.AddMonths(-3) : null,
-                    WebsiteUrl  = s.WebsiteUrl,
+                    WebsiteUrl = s.WebsiteUrl,
                     InstagramUrl = s.Instagram,
                 });
             }
@@ -220,12 +244,12 @@ namespace MarketPlaceApi.Data
 
                 var user = new User
                 {
-                    UserName   = b.Email,
-                    Email      = b.Email,
-                    FirstName  = b.FirstName,
-                    LastName   = b.LastName,
-                    City       = b.City,
-                    Country    = b.Country,
+                    UserName = b.Email,
+                    Email = b.Email,
+                    FirstName = b.FirstName,
+                    LastName = b.LastName,
+                    City = b.City,
+                    Country = b.Country,
                     PostalCode = b.PostalCode,
                     EmailConfirmed = true,
                 };
@@ -245,39 +269,39 @@ namespace MarketPlaceApi.Data
             if (await db.Products.AnyAsync()) return;
 
             // Load attribute IDs that were just seeded
-            var roastLight      = (await db.RoastLevel.FirstAsync(r => r.Name == "Light")).Id;
-            var roastMedium     = (await db.RoastLevel.FirstAsync(r => r.Name == "Medium")).Id;
+            var roastLight = (await db.RoastLevel.FirstAsync(r => r.Name == "Light")).Id;
+            var roastMedium = (await db.RoastLevel.FirstAsync(r => r.Name == "Medium")).Id;
             var roastMediumDark = (await db.RoastLevel.FirstAsync(r => r.Name == "Medium-Dark")).Id;
-            var roastDark       = (await db.RoastLevel.FirstAsync(r => r.Name == "Dark")).Id;
+            var roastDark = (await db.RoastLevel.FirstAsync(r => r.Name == "Dark")).Id;
 
-            var procWashed      = (await db.CoffeeProcess.FirstAsync(p => p.Name == "Washed")).Id;
-            var procNatural     = (await db.CoffeeProcess.FirstAsync(p => p.Name == "Natural")).Id;
-            var procHoney       = (await db.CoffeeProcess.FirstAsync(p => p.Name == "Honey")).Id;
-            var procAnaerobic   = (await db.CoffeeProcess.FirstAsync(p => p.Name == "Anaerobic")).Id;
+            var procWashed = (await db.CoffeeProcess.FirstAsync(p => p.Name == "Washed")).Id;
+            var procNatural = (await db.CoffeeProcess.FirstAsync(p => p.Name == "Natural")).Id;
+            var procHoney = (await db.CoffeeProcess.FirstAsync(p => p.Name == "Honey")).Id;
+            var procAnaerobic = (await db.CoffeeProcess.FirstAsync(p => p.Name == "Anaerobic")).Id;
 
-            var origEthiopia    = (await db.CoffeeOrigin.FirstAsync(o => o.Name == "Ethiopia")).Id;
-            var origColombia    = (await db.CoffeeOrigin.FirstAsync(o => o.Name == "Colombia")).Id;
-            var origBrazil      = (await db.CoffeeOrigin.FirstAsync(o => o.Name == "Brazil")).Id;
-            var origGuatemala   = (await db.CoffeeOrigin.FirstAsync(o => o.Name == "Guatemala")).Id;
-            var origKenya       = (await db.CoffeeOrigin.FirstAsync(o => o.Name == "Kenya")).Id;
+            var origEthiopia = (await db.CoffeeOrigin.FirstAsync(o => o.Name == "Ethiopia")).Id;
+            var origColombia = (await db.CoffeeOrigin.FirstAsync(o => o.Name == "Colombia")).Id;
+            var origBrazil = (await db.CoffeeOrigin.FirstAsync(o => o.Name == "Brazil")).Id;
+            var origGuatemala = (await db.CoffeeOrigin.FirstAsync(o => o.Name == "Guatemala")).Id;
+            var origKenya = (await db.CoffeeOrigin.FirstAsync(o => o.Name == "Kenya")).Id;
 
-            var regYirgacheffe  = (await db.CoffeeRegion.FirstAsync(r => r.Name == "Yirgacheffe")).Id;
-            var regHuila        = (await db.CoffeeRegion.FirstAsync(r => r.Name == "Huila")).Id;
-            var regCerrado      = (await db.CoffeeRegion.FirstAsync(r => r.Name == "Cerrado")).Id;
-            var regAntigua      = (await db.CoffeeRegion.FirstAsync(r => r.Name == "Antigua")).Id;
-            var regNyeri        = (await db.CoffeeRegion.FirstAsync(r => r.Name == "Nyeri")).Id;
+            var regYirgacheffe = (await db.CoffeeRegion.FirstAsync(r => r.Name == "Yirgacheffe")).Id;
+            var regHuila = (await db.CoffeeRegion.FirstAsync(r => r.Name == "Huila")).Id;
+            var regCerrado = (await db.CoffeeRegion.FirstAsync(r => r.Name == "Cerrado")).Id;
+            var regAntigua = (await db.CoffeeRegion.FirstAsync(r => r.Name == "Antigua")).Id;
+            var regNyeri = (await db.CoffeeRegion.FirstAsync(r => r.Name == "Nyeri")).Id;
 
-            var prodJabez       = (await db.CoffeeProducer.FirstAsync(p => p.Name == "Jabez Tadesse")).Id;
-            var prodLuis        = (await db.CoffeeProducer.FirstAsync(p => p.Name == "Luis Anibal Calderon")).Id;
-            var prodDaterra     = (await db.CoffeeProducer.FirstAsync(p => p.Name == "Daterra Farm")).Id;
-            var prodElInjerto   = (await db.CoffeeProducer.FirstAsync(p => p.Name == "El Injerto")).Id;
-            var prodGakuyuini   = (await db.CoffeeProducer.FirstAsync(p => p.Name == "Gakuyuini Estate")).Id;
+            var prodJabez = (await db.CoffeeProducer.FirstAsync(p => p.Name == "Jabez Tadesse")).Id;
+            var prodLuis = (await db.CoffeeProducer.FirstAsync(p => p.Name == "Luis Anibal Calderon")).Id;
+            var prodDaterra = (await db.CoffeeProducer.FirstAsync(p => p.Name == "Daterra Farm")).Id;
+            var prodElInjerto = (await db.CoffeeProducer.FirstAsync(p => p.Name == "El Injerto")).Id;
+            var prodGakuyuini = (await db.CoffeeProducer.FirstAsync(p => p.Name == "Gakuyuini Estate")).Id;
 
-            var varHeirloom     = (await db.CoffeeVarietal.FirstAsync(v => v.Name == "Heirloom")).Id;
-            var varCaturra      = (await db.CoffeeVarietal.FirstAsync(v => v.Name == "Caturra")).Id;
-            var varBourbon      = (await db.CoffeeVarietal.FirstAsync(v => v.Name == "Bourbon")).Id;
-            var varTypica       = (await db.CoffeeVarietal.FirstAsync(v => v.Name == "Typica")).Id;
-            var varSL28         = (await db.CoffeeVarietal.FirstAsync(v => v.Name == "SL28")).Id;
+            var varHeirloom = (await db.CoffeeVarietal.FirstAsync(v => v.Name == "Heirloom")).Id;
+            var varCaturra = (await db.CoffeeVarietal.FirstAsync(v => v.Name == "Caturra")).Id;
+            var varBourbon = (await db.CoffeeVarietal.FirstAsync(v => v.Name == "Bourbon")).Id;
+            var varTypica = (await db.CoffeeVarietal.FirstAsync(v => v.Name == "Typica")).Id;
+            var varSL28 = (await db.CoffeeVarietal.FirstAsync(v => v.Name == "SL28")).Id;
 
             var alt1200 = (await db.CoffeeAltitude.FirstAsync(a => a.ValueInMasl == 1200)).Id;
             var alt1500 = (await db.CoffeeAltitude.FirstAsync(a => a.ValueInMasl == 1500)).Id;
@@ -288,9 +312,9 @@ namespace MarketPlaceApi.Data
             // seller 0 = Sarah (Bloom Roasters)
             // seller 1 = Marcus (Pacific Crest)
             // seller 2 = Amara (Ubuntu)
-            string sarahId  = sellerIds[0];
+            string sarahId = sellerIds[0];
             string marcusId = sellerIds[1];
-            string amaraId  = sellerIds[2];
+            string amaraId = sellerIds[2];
 
             var products = new List<Product>
             {
