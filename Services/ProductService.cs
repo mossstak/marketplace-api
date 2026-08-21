@@ -149,7 +149,14 @@ namespace MarketPlaceApi.Services
                 p.ProductDescription,
                 category = p.Category.ToString(),
                 grind = p.Grind.ToString(),
-                Seller = new { p.SellerId},
+                Seller = new { p.SellerId },
+                Variants = p.Variants.Select(v => new
+                {
+                    v.Id,
+                    v.Size,
+                    v.Price,
+                    v.Quantity,
+                }),
                 Images = _context.ProductImages
                     .Where(img => img.ProductId == p.Id)
                     .OrderByDescending(img => img.IsPrimary)
