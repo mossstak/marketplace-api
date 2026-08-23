@@ -147,7 +147,11 @@ namespace MarketPlaceApi.Services
                 p.Id,
                 p.ProductName,
                 p.ProductDescription,
-                category = p.Category.ToString(),
+                category = p.Category == ProductCategory.CoffeeBeans ? "Coffee Beans" :
+                           p.Category == ProductCategory.Grinder ? "Grinder" :
+                           p.Category == ProductCategory.EspressoMachine ? "Espresso Machine" :
+                           p.Category == ProductCategory.BaristaTools ? "Barista Tools" :
+                           p.Category == ProductCategory.Misc ? "Miscellaneous" : "Uncategorized",
                 grind = p.Grind.ToString(),
                 Seller = new { p.SellerId },
                 Variants = p.Variants.Select(v => new
