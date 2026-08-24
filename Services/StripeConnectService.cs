@@ -140,15 +140,31 @@ namespace MarketPlaceApi.Services
 
         public async Task<DestinationPaymentIntentResponseDto> CreateDestinationPaymentIntentAsync(CreateDestinationPaymentRequestDto dto)
         {
-            var roaster = await _dbContext.RoasterProfiles.FirstOrDefaultAsync(r => r.Id == dto.RoasterProfileId);
-            if (roaster == null || string.IsNullOrEmpty(roaster.StripeAccountId))
+            if (dto.AmountInMinorUnit < 30)
             {
-                throw new InvalidOperationException("Selected roaster does not have an active Stripe Connected account.");
+                throw new InvalidOperationException("The minimum payment amount is £0.30 (30p).");
+            }
+
+            var roaster = await _dbContext.RoasterProfiles.FirstOrDefaultAsync(r => r.Id == dto.RoasterProfileId);
+            if (roaster == null)
+            {
+                throw new InvalidOperationException("The selected roaster profile was not found.");
+            }
+
+            if (string.IsNullOrEmpty(roaster.StripeAccountId))
+            {
+                var name = !string.IsNullOrWhiteSpace(roaster.CompanyName) ? roaster.CompanyName : "This roaster";
+                throw new InvalidOperationException($"{name} has not completed their Stripe Connect payout setup yet.");
             }
 
             // Calculate Application Fee (Platform Commission)
             long applicationFee = dto.ApplicationFeeAmountInMinorUnit ??
                 (long)Math.Round(dto.AmountInMinorUnit * (dto.FeePercentage / 100.0m));
+
+            if (applicationFee >= dto.AmountInMinorUnit)
+            {
+                applicationFee = Math.Max(0, dto.AmountInMinorUnit - 1);
+            }
 
             var options = new PaymentIntentCreateOptions
             {
