@@ -157,6 +157,23 @@ namespace MarketPlaceApi.Services
                 throw new InvalidOperationException($"{name} has not completed their Stripe Connect payout setup yet.");
             }
 
+            // Verify with Stripe that the connected account is active and able to receive transfers
+            var accountService = new AccountService();
+            var stripeAccount = await accountService.GetAsync(roaster.StripeAccountId);
+            bool isReady = stripeAccount.PayoutsEnabled && stripeAccount.ChargesEnabled;
+
+            if (roaster.PayoutsEnabled != isReady)
+            {
+                roaster.PayoutsEnabled = isReady;
+                await _dbContext.SaveChangesAsync();
+            }
+
+            if (!isReady)
+            {
+                var name = !string.IsNullOrWhiteSpace(roaster.CompanyName) ? roaster.CompanyName : "This roaster";
+                throw new InvalidOperationException($"{name} has not completed their Stripe onboarding yet. The seller must complete onboarding in Seller > Payouts before receiving customer payments.");
+            }
+
             // Calculate Application Fee (Platform Commission)
             long applicationFee = dto.ApplicationFeeAmountInMinorUnit ??
                 (long)Math.Round(dto.AmountInMinorUnit * (dto.FeePercentage / 100.0m));
