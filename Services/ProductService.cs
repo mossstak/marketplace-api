@@ -274,7 +274,9 @@ namespace MarketPlaceApi.Services
         {
             var product = await _context.Products
                 .Include(p => p.Variants)
-                .FirstOrDefaultAsync(p => p.Id == id) ?? throw new KeyNotFoundException("Product Not Found");
+                .FirstOrDefaultAsync(p => p.Id == id)
+                ?? throw new KeyNotFoundException("Product Not Found");
+
             product.ProductName = dto.ProductName;
             product.ProductDescription = dto.ProductDescription;
             product.Category = dto.Category;
@@ -288,18 +290,78 @@ namespace MarketPlaceApi.Services
             product.TastingNotes = dto.TastingNotes;
             product.RoastDate = dto.RoastDate;
 
-            product.Variants.Clear();
+            // 1. Remove variants deleted from the UI
+            var incomingVariantIds = dto.Variants
+                .Where(v => v.Id.HasValue && v.Id.Value > 0)
+                .Select(v => v.Id!.Value)
+                .ToList();
 
+            var variantsToRemove = product.Variants
+                .Where(v => !incomingVariantIds.Contains(v.Id))
+                .ToList();
+
+            foreach (var variant in variantsToRemove)
+            {
+                _context.ProductVariants.Remove(variant);
+            }
+
+            // 2. Update existing variants or add new ones with null-coalescing (??)
             foreach (var v in dto.Variants)
             {
-                product.Variants.Add(new ProductVariant
+                var priceValue = v.Price ?? 0m;       // Resolves 'decimal?' to 'decimal'
+                var quantityValue = v.Quantity ?? 0;  // Resolves 'int?' to 'int'
+
+                if (v.Id.HasValue && v.Id.Value > 0)
                 {
-                    Id = v.Id ?? 0,
-                    Size = v.Size,
-                    Price = v.Price,
-                    Quantity = v.Quantity,
-                    ProductId = product.Id
-                });
+                    var existing = product.Variants.FirstOrDefault(x => x.Id == v.Id.Value);
+                    if (existing != null)
+                    {
+                        existing.Size = v.Size;
+                        existing.Price = priceValue;
+                        existing.Quantity = quantityValue;
+                    }
+                }
+                else
+                {
+                    product.Variants.Add(new ProductVariant
+                    {
+                        Size = v.Size,
+                        Price = priceValue,
+                        Quantity = quantityValue,
+                        ProductId = product.Id
+                    });
+                }
+            }
+
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task UpdateVariantAsync(int variantId, UpdateVariantDto dto, string userId, bool isAdmin)
+        {
+            var variant = await _context.ProductVariants
+                .Include(v => v.Product)
+                .FirstOrDefaultAsync(v => v.Id == variantId)
+                ?? throw new KeyNotFoundException("Variant Not Found");
+
+            if (!isAdmin && variant.Product.SellerId != userId)
+                throw new UnauthorizedAccessException("You do not have permission to update this product.");
+
+            // Update only what is provided
+            if (!string.IsNullOrWhiteSpace(dto.Size))
+                variant.Size = dto.Size.Trim();
+
+            if (dto.Price.HasValue)
+            {
+                if (dto.Price.Value < 0)
+                    throw new InvalidOperationException("Price cannot be negative.");
+                variant.Price = dto.Price.Value;
+            }
+
+            if (dto.Quantity.HasValue)
+            {
+                if (dto.Quantity.Value < 0)
+                    throw new InvalidOperationException("Quantity cannot be negative.");
+                variant.Quantity = dto.Quantity.Value;
             }
 
             await _context.SaveChangesAsync();

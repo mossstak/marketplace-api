@@ -14,6 +14,7 @@ namespace MarketPlaceApi.Services
         Task<object> GetProductByIdAsync(int id);
         Task<IEnumerable<object>> GetProductsBySellerAsync(string sellerId);
         Task UpdateProductAsync(int id, UpdateProductDto dto);
+        Task UpdateVariantAsync(int variantId, UpdateVariantDto dto, string userId, bool isAdmin);
         Task EditProductAsync(int id, EditProductDto dto);
         Task DeleteProductAsync(int id);
     }

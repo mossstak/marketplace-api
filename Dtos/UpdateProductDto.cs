@@ -22,8 +22,8 @@ namespace MarketPlaceApi.Dtos
     public class UpdateVariantDto
     {
         public int? Id { get; set; }  // null = new variant
-        public string Size { get; set; }
-        public decimal Price { get; set; }
-        public int Quantity { get; set; }
+        public string? Size { get; set; }
+        public decimal? Price { get; set; }
+        public int? Quantity { get; set; }
     }
 }

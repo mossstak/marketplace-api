@@ -115,6 +115,34 @@ namespace MarketPlaceApi.Controllers
         }
 
         [Authorize(Roles = "Seller, Admin")]
+        [HttpPatch("variant/{variantId:int}")]
+        public async Task<IActionResult> UpdateVariant(int variantId, [FromBody] UpdateVariantDto dto)
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null) return Unauthorized("User not found");
+
+            var isAdmin = await _userManager.IsInRoleAsync(user, "Admin");
+
+            try
+            {
+                await _productService.UpdateVariantAsync(variantId, dto, user.Id, isAdmin);
+                return Ok(new { Message = "Variant updated successfully", VariantId = variantId });
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                return Forbid(ex.Message);
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [Authorize(Roles = "Seller, Admin")]
         [HttpDelete("delete/{id}")]
         public async Task<IActionResult> DeleteProduct(int id)
         {
