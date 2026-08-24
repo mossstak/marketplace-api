@@ -4,7 +4,7 @@ namespace MarketPlaceApi.Dtos
 {
     public class CreateProductDto
     {
-        public string? ProductName { get; set; }
+        public string ProductName { get; set; } = "";
         public string? ProductDescription { get; set; } = "";
         public ProductCategory Category { get; set; }
         public BrewingMethod Grind { get; set; }
@@ -24,7 +24,7 @@ namespace MarketPlaceApi.Dtos
 
     public class CreateVariantDto
     {
-        public string Size { get; set; }
+        public string Size { get; set; } = "";
         public decimal Price { get; set; }
         public int Quantity { get; set; }
     }
