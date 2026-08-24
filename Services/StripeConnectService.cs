@@ -49,7 +49,7 @@ namespace MarketPlaceApi.Services
                 var accountOptions = new AccountCreateOptions
                 {
                     Type = "express",
-                    Email = roaster.User?.Email,
+                    Email = string.IsNullOrWhiteSpace(roaster.User?.Email) ? null : roaster.User.Email.Trim(),
                     Capabilities = new AccountCapabilitiesOptions
                     {
                         CardPayments = new AccountCapabilitiesCardPaymentsOptions { Requested = true },
@@ -166,11 +166,13 @@ namespace MarketPlaceApi.Services
                 applicationFee = Math.Max(0, dto.AmountInMinorUnit - 1);
             }
 
+            var receiptEmail = string.IsNullOrWhiteSpace(dto.CustomerEmail) ? null : dto.CustomerEmail.Trim();
+
             var options = new PaymentIntentCreateOptions
             {
                 Amount = dto.AmountInMinorUnit,
                 Currency = dto.Currency.ToLowerInvariant(),
-                ReceiptEmail = dto.CustomerEmail,
+                ReceiptEmail = receiptEmail,
                 ApplicationFeeAmount = applicationFee,
                 TransferData = new PaymentIntentTransferDataOptions
                 {

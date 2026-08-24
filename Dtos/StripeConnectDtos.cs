@@ -29,7 +29,7 @@ namespace MarketPlaceApi.Dtos
     {
         public long AmountInMinorUnit { get; set; } // e.g. 3000 = £30.00
         public string Currency { get; set; } = "gbp";
-        public string CustomerEmail { get; set; } = string.Empty;
+        public string? CustomerEmail { get; set; }
         public int RoasterProfileId { get; set; }
         public long? ApplicationFeeAmountInMinorUnit { get; set; } // Optional fixed app fee
         public decimal FeePercentage { get; set; } = 5.0m; // Default 5% platform commission
