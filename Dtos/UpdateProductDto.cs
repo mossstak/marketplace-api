@@ -4,19 +4,21 @@ namespace MarketPlaceApi.Dtos
 {
     public class UpdateProductDto
     {
-    public string? ProductName { get; set; }
-    public string? ProductDescription { get; set; }
-    public ProductCategory Category {get; set;}
-    public int RoastLevelId { get; set; }
-    public int CoffeeProcessId { get; set; }
-    public int OriginId {get; set;}
-    public int RegionId { get; set; }
-    public int ProducerId { get; set; }
-    public int VarietalId { get; set; }
-    public int AltitudeId { get; set; }
-    public string? TastingNotes { get; set; }
-    public DateTime RoastDate { get; set; }
-    public List<UpdateVariantDto> Variants { get; set; } = new();
+        public string? ProductName { get; set; }
+        public string? ProductDescription { get; set; }
+        public ProductCategory Category { get; set; }
+        public int RoastLevelId { get; set; }
+        public int CoffeeProcessId { get; set; }
+        public int OriginId { get; set; }
+        public int RegionId { get; set; }
+        public int ProducerId { get; set; }
+        public int VarietalId { get; set; }
+        public int AltitudeId { get; set; }
+        public string? TastingNotes { get; set; }
+        public DateTime RoastDate { get; set; }
+        public List<UpdateVariantDto> Variants { get; set; } = new();
+        public List<int> ImageIds { get; set; } = new List<int>();
+        public int? PrimaryImageId { get; set; }
     }
 
     public class UpdateVariantDto

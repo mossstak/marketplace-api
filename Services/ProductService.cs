@@ -305,11 +305,11 @@ namespace MarketPlaceApi.Services
                 _context.ProductVariants.Remove(variant);
             }
 
-            // 2. Update existing variants or add new ones with null-coalescing (??)
+            // 2. Update existing variants or add new ones
             foreach (var v in dto.Variants)
             {
-                var priceValue = v.Price ?? 0m;       // Resolves 'decimal?' to 'decimal'
-                var quantityValue = v.Quantity ?? 0;  // Resolves 'int?' to 'int'
+                var priceValue = v.Price ?? 0m;
+                var quantityValue = v.Quantity ?? 0;
 
                 if (v.Id.HasValue && v.Id.Value > 0)
                 {
@@ -330,6 +330,38 @@ namespace MarketPlaceApi.Services
                         Quantity = quantityValue,
                         ProductId = product.Id
                     });
+                }
+            }
+
+            // 3. Sync Product Images
+            if (dto.ImageIds != null)
+            {
+                // Remove existing product images
+                var existingProductImages = await _context.Set<ProductImage>()
+                    .Where(pi => pi.ProductId == product.Id)
+                    .ToListAsync();
+
+                _context.Set<ProductImage>().RemoveRange(existingProductImages);
+
+                if (dto.ImageIds.Count > 0)
+                {
+                    var imageIds = dto.ImageIds.Distinct().ToList();
+                    var sellerImages = await _context.Set<SellerImage>()
+                        .Where(x => x.SellerId == product.SellerId && imageIds.Contains(x.Id))
+                        .ToListAsync();
+
+                    var primaryId = dto.PrimaryImageId ?? imageIds.First();
+
+                    var newProductImages = sellerImages.Select(img => new ProductImage
+                    {
+                        ProductId = product.Id,
+                        ImageUrl = img.ImageUrl,
+                        PublicId = img.PublicId,
+                        IsPrimary = img.Id == primaryId,
+                        CreatedAtUtc = DateTime.UtcNow
+                    }).ToList();
+
+                    _context.Set<ProductImage>().AddRange(newProductImages);
                 }
             }
 
