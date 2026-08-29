@@ -7,12 +7,15 @@ namespace MarketPlaceApi.Models
 {
     public class Order
     {
-        public int Id {get; set;}
-        public string BuyerId {get; set;} = "";
-        public User? Buyer {get; set;}
-        public decimal TotalAmount {get; set;}
-        public DateTime CreatedAt {get; set;} = DateTime.UtcNow;
-        public ICollection<OrderItem> Items {get; set;} = new List<OrderItem>();
-        public OrderStatus Status {get; set;} = OrderStatus.Pending;
+        public int Id { get; set; }
+        public string BuyerId { get; set; } = "";
+        public User? Buyer { get; set; }
+        public decimal TotalAmount { get; set; }
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+        public ICollection<OrderItem> Items { get; set; } = new List<OrderItem>();
+        public OrderStatus Status { get; set; } = OrderStatus.Pending;
+        public decimal SubtotalAmount { get; set; }
+        public decimal TaxAmount { get; set; }
+        public string? StripeTaxCalculationId { get; set; }
     }
 }

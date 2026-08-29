@@ -1,3 +1,5 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace MarketPlaceApi.Dtos
 {
     public class CreateOnboardingLinkRequestDto
@@ -27,12 +29,20 @@ namespace MarketPlaceApi.Dtos
 
     public class CreateDestinationPaymentRequestDto
     {
+        public int? OrderId { get; set; }
         public long AmountInMinorUnit { get; set; } // e.g. 3000 = £30.00
         public string Currency { get; set; } = "gbp";
-        public string? CustomerEmail { get; set; }
-        public int RoasterProfileId { get; set; }
         public long? ApplicationFeeAmountInMinorUnit { get; set; } // Optional fixed app fee
         public decimal FeePercentage { get; set; } = 5.0m; // Default 5% platform commission
+        [EmailAddress]
+        public string? CustomerEmail { get; set; }
+        public string? ShippingAddressLine1 { get; set; }
+        public string? ShippingCity { get; set; }
+        public string? ShippingPostalCode { get; set; }
+        public string? ShippingCountry { get; set; } = "GB";
+
+        [Required]
+        public int RoasterProfileId { get; set; }
     }
 
     public class DestinationPaymentIntentResponseDto

@@ -84,6 +84,7 @@ namespace MarketPlaceApi.Models
         public string? TastingNotes { get; set; }
         public DateTime RoastDate { get; set; }
 
+        public string? TaxCode {get; set;}
 
         //One Seller has Multiple Products
         public string? SellerId { get; set; }
