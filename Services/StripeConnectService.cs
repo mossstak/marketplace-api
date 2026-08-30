@@ -50,6 +50,13 @@ namespace MarketPlaceApi.Services
                 {
                     Type = "express",
                     Email = string.IsNullOrWhiteSpace(roaster.User?.Email) ? null : roaster.User.Email.Trim(),
+
+                    BusinessProfile = new AccountBusinessProfileOptions
+                    {
+                        Name = roaster.CompanyName ?? $"{roaster.User?.FirstName} {roaster.User?.LastName}".Trim(),
+                        Url = string.IsNullOrWhiteSpace(roaster.WebsiteUrl) ? null : roaster.WebsiteUrl.Trim()
+                    },
+
                     Capabilities = new AccountCapabilitiesOptions
                     {
                         CardPayments = new AccountCapabilitiesCardPaymentsOptions { Requested = true },

@@ -12,7 +12,9 @@ namespace MarketPlaceApi.Services
         Task<Order> CreateOrderAsync(User buyer, CreateOrderDto dto);
         Task UpdateOrderAsync(User buyer, int orderId, CreateOrderDto dto);
         Task UpdateOrderStatusAsync(int orderId, OrderStatus status);
+        Task UpdateSellerOrderStatusAsync(int orderId, OrderStatus newStatus, string sellerId, bool isAdmin);
         Task DeleteOrderAsync(int orderId, string requesterId, bool isAdmin);
         Task<IEnumerable<object>> GetOrdersForUserAsync(string buyerId);
+        Task<IEnumerable<object>> GetOrdersForSellerAsync(string sellerId);
     }
 }

@@ -135,6 +135,29 @@ public class OrderService : IOrderService
         await _context.SaveChangesAsync();
     }
 
+    public async Task UpdateSellerOrderStatusAsync(int orderId, OrderStatus newStatus, string sellerId, bool isAdmin)
+    {
+        var order = await _context.Orders
+            .Include(o => o.Items)
+            .ThenInclude(i => i.Variant)
+            .ThenInclude(v => v.Product)
+            .FirstOrDefaultAsync(o => o.Id == orderId)
+            ?? throw new KeyNotFoundException("Order not found.");
+
+        // Validate that the order contains items belonging to this seller
+        if (!isAdmin)
+        {
+            bool ownsAnyItem = order.Items.Any(i => i.Variant?.Product?.SellerId == sellerId);
+            if (!ownsAnyItem)
+            {
+                throw new UnauthorizedAccessException("You can only update orders for your own products.");
+            }
+        }
+
+        order.Status = newStatus;
+        await _context.SaveChangesAsync();
+    }
+
     public async Task DeleteOrderAsync(int orderId, string requesterId, bool isAdmin)
     {
         var order = await _context.Orders
@@ -160,12 +183,45 @@ public class OrderService : IOrderService
         await _context.SaveChangesAsync();
     }
 
+    public async Task<IEnumerable<object>> GetOrdersForSellerAsync(string sellerId)
+    {
+        var orders = await _context.Orders
+            .Include(o => o.Items)
+                .ThenInclude(i => i.Variant)
+                .ThenInclude(v => v.Product)
+            .Where(o => o.Items.Any(i => i.Variant != null && i.Variant.Product != null && i.Variant.Product.SellerId == sellerId))
+            .OrderByDescending(o => o.CreatedAt)
+            .Select(o => new
+            {
+                o.Id,
+                o.TotalAmount,
+                o.Status,
+                o.CreatedAt,
+                Items = o.Items
+                    .Where(i => i.Variant != null && i.Variant.Product != null && i.Variant.Product.SellerId == sellerId)
+                    .Select(i => new
+                    {
+                        i.Id,
+                        i.ProductVariantId,
+                        ProductName = i.Variant != null && i.Variant.Product != null ? i.Variant.Product.ProductName : "Artisan Roast",
+                        Size = i.Variant != null ? i.Variant.Size : null,
+                        i.Quantity,
+                        i.UnitPrice,
+                        i.Subtotal
+                    })
+            })
+            .ToListAsync();
+
+        return orders.Cast<object>();
+    }
+
     public async Task<IEnumerable<object>> GetOrdersForUserAsync(string buyerId)
     {
         var orders = await _context.Orders
             .Where(o => o.BuyerId == buyerId)
             .Include(o => o.Items)
             .ThenInclude(i => i.Variant)
+            .ThenInclude(v => v.Product)
             .OrderByDescending(o => o.CreatedAt)
             .Select(o => new
             {
@@ -177,6 +233,8 @@ public class OrderService : IOrderService
                 {
                     i.Id,
                     i.ProductVariantId,
+                    ProductName = i.Variant != null && i.Variant.Product != null ? i.Variant.Product.ProductName : "Unknown Coffee",
+                    Size = i.Variant != null ? i.Variant.Size : null,
                     i.Quantity,
                     i.UnitPrice,
                     i.Subtotal

@@ -231,11 +231,56 @@ namespace MarketPlaceApi.Data
         {
             var buyers = new[]
             {
-                new { Email = "james.williams@email.com",  Password = "Buyer@1234", FirstName = "James",  LastName = "Williams", City = "Manchester",  Country = "United Kingdom", PostalCode = "M1 1AE" },
-                new { Email = "priya.patel@email.com",     Password = "Buyer@1234", FirstName = "Priya",  LastName = "Patel",    City = "Birmingham",  Country = "United Kingdom", PostalCode = "B1 1BB" },
-                new { Email = "lars.andersen@email.com",   Password = "Buyer@1234", FirstName = "Lars",   LastName = "Andersen", City = "Copenhagen",  Country = "Denmark",         PostalCode = "1050"   },
-                new { Email = "sofia.moreno@email.com",    Password = "Buyer@1234", FirstName = "Sofia",  LastName = "Moreno",   City = "Barcelona",   Country = "Spain",           PostalCode = "08001"  },
-                new { Email = "daniel.kim@email.com",      Password = "Buyer@1234", FirstName = "Daniel", LastName = "Kim",      City = "Seoul",       Country = "South Korea",     PostalCode = "03187"  },
+                new
+                {
+                    Email = "james.williams@email.com",
+                    Password = "Buyer@1234",
+                    FirstName = "James",
+                    LastName = "Williams",
+                    City = "Manchester",
+                    Country = "United Kingdom",
+                    PostalCode = "M1 1AE"
+                },
+                new 
+                { 
+                    Email = "priya.patel@email.com",     
+                    Password = "Buyer@1234", 
+                    FirstName = "Priya",  
+                    LastName = "Patel",    
+                    City = "Birmingham",  
+                    Country = "United Kingdom", 
+                    PostalCode = "B1 1BB" 
+                },
+                new 
+                { 
+                    Email = "lars.andersen@email.com",   
+                    Password = "Buyer@1234", 
+                    FirstName = "Lars",   
+                    LastName = "Andersen", 
+                    City = "Copenhagen",  
+                    Country = "Denmark",         
+                    PostalCode = "1050"   
+                },
+                new 
+                { 
+                    Email = "sofia.moreno@email.com",    
+                    Password = "Buyer@1234", 
+                    FirstName = "Sofia",  
+                    LastName = "Moreno",   
+                    City = "Barcelona",   
+                    Country = "Spain",           
+                    PostalCode = "08001"  
+                },
+                new 
+                { 
+                    Email = "daniel.kim@email.com",      
+                    Password = "Buyer@1234", 
+                    FirstName = "Daniel", 
+                    LastName = "Kim",      
+                    City = "Seoul",       
+                    Country = "South Korea",     
+                    PostalCode = "03187"  
+                },
             };
 
             foreach (var b in buyers)

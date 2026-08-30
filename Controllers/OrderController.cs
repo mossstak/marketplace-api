@@ -53,6 +53,17 @@ namespace MarketPlaceApi.Controllers
             return Ok(orders);
         }
 
+        [Authorize(Roles = "Seller")]
+        [HttpGet("seller")]
+        public async Task<IActionResult> GetSellerOrders()
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null) return Unauthorized();
+
+            var orders = await _orderService.GetOrdersForSellerAsync(user.Id);
+            return Ok(orders);
+        }
+
         [Authorize(Roles = "Buyer")]
         [HttpPut("update/{id:int}")]
         public async Task<IActionResult> UpdateOrder(int id, [FromBody] CreateOrderDto dto)
@@ -79,10 +90,14 @@ namespace MarketPlaceApi.Controllers
             }
         }
 
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Seller, Admin")]
         [HttpPatch("{id:int}/status")]
         public async Task<IActionResult> UpdateOrderStatus(int id, [FromBody] UpdateOrderStatusDto dto)
         {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null) return Unauthorized();
+
+            var isAdmin = await _userManager.IsInRoleAsync(user, "Admin");
             try
             {
                 await _orderService.UpdateOrderStatusAsync(id, dto.Status);
