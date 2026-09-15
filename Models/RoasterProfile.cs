@@ -22,6 +22,9 @@ namespace MarketPlaceApi.Models
     public bool IsVerified { get; set; }
     public DateTime? VerifiedAtUtc { get; set; }
 
+    // Admin approval status
+    public ApprovalStatus ApprovalStatus { get; set; } = ApprovalStatus.Pending;
+
     // Stripe Connect Payouts
     public string? StripeAccountId { get; set; }
     public bool PayoutsEnabled { get; set; }

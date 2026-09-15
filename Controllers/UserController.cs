@@ -33,19 +33,20 @@ namespace MarketPlaceApi.Controllers
             if (dto.Password != dto.ConfirmPassword)
                 return BadRequest("Passwords do not match.");
 
-            if (dto.Role != "Seller" && dto.Role != "Buyer")
+            if (!string.IsNullOrWhiteSpace(dto.Role) && dto.Role == "Admin")
             {
                 // Admin accounts must not be self-service registered.
                 return BadRequest("Role must be Seller or Buyer.");
             }
 
-            if (string.IsNullOrWhiteSpace(dto.AddressOne)
-                || string.IsNullOrWhiteSpace(dto.City)
-                || string.IsNullOrWhiteSpace(dto.Country)
-                || string.IsNullOrWhiteSpace(dto.PostalCode))
+            if (!string.IsNullOrWhiteSpace(dto.Role) && dto.Role != "Buyer" && dto.Role != "Seller")
             {
-                return BadRequest("Address fields are required for buyers and sellers.");
+                return BadRequest("Role must be Seller or Buyer.");
             }
+
+            // All new accounts are assigned the default "Buyer" role
+            dto.Role = "Buyer";
+
             try
             {
                 var user = await _userService.Register(dto);
@@ -99,6 +100,7 @@ namespace MarketPlaceApi.Controllers
                 return NotFound();
 
             var roles = await _userManager.GetRolesAsync(user);
+            var hasRoasterProfile = user.RoasterProfile != null;
 
             return Ok(new
             {
@@ -111,7 +113,8 @@ namespace MarketPlaceApi.Controllers
                 user.City,
                 user.Country,
                 user.PostalCode,
-                Roles = roles
+                Roles = roles,
+                HasRoasterProfile = hasRoasterProfile
             });
         }
 

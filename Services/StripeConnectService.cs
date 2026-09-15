@@ -32,6 +32,17 @@ namespace MarketPlaceApi.Services
             }
         }
 
+        private decimal GetCommissionPercentage(long amountInMinorUnit)
+        {
+            return amountInMinorUnit switch
+            {
+                < 1000 => 10.0m,
+                >= 1000 and < 2000 => 15.0m,
+                >= 2000 and < 3000 => 20.0m,
+                _ => 30.0m
+            };
+        }
+
         public async Task<StripeOnboardingResponseDto> CreateOrGetOnboardingLinkAsync(string userId, CreateOnboardingLinkRequestDto dto)
         {
             var roaster = await _dbContext.RoasterProfiles
@@ -181,9 +192,10 @@ namespace MarketPlaceApi.Services
                 throw new InvalidOperationException($"{name} has not completed their Stripe onboarding yet. The seller must complete onboarding in Seller > Payouts before receiving customer payments.");
             }
 
+            decimal feePercentage = GetCommissionPercentage(dto.AmountInMinorUnit);
+
             // Calculate Application Fee (Platform Commission)
-            long applicationFee = dto.ApplicationFeeAmountInMinorUnit ??
-                (long)Math.Round(dto.AmountInMinorUnit * (dto.FeePercentage / 100.0m));
+            long applicationFee = (long)Math.Round(dto.AmountInMinorUnit * (feePercentage / 100.0m));
 
             if (applicationFee >= dto.AmountInMinorUnit)
             {

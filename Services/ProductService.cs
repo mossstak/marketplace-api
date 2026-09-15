@@ -142,7 +142,9 @@ namespace MarketPlaceApi.Services
         //Gets All Products
         public async Task<IEnumerable<object>> GetAllProductsAsync()
         {
-            var products = await _context.Products.Select(p => new
+            var products = await _context.Products
+                .Where(p => p.Seller != null && p.Seller.RoasterProfile != null && p.Seller.RoasterProfile.ApprovalStatus == ApprovalStatus.Approved)
+                .Select(p => new
             {
                 p.Id,
                 p.ProductName,
@@ -180,7 +182,7 @@ namespace MarketPlaceApi.Services
         public async Task<object> GetProductByIdAsync(int id)
         {
             var product = await _context.Products
-                .Where(p => p.Id == id)
+                .Where(p => p.Id == id && p.Seller != null && p.Seller.RoasterProfile != null && p.Seller.RoasterProfile.ApprovalStatus == ApprovalStatus.Approved)
                 .Select(p => new
                 {
                     p.Id,

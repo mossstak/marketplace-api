@@ -20,24 +20,20 @@ namespace MarketPlaceApi.Services
 
         public async Task<User> Register(RegisterDto dto)
         {
+            var role = string.IsNullOrWhiteSpace(dto.Role) ? "Buyer" : dto.Role;
             var user = new User
             {
                 UserName = dto.Email,
                 Email = dto.Email,
                 FirstName = dto.FirstName,
-                LastName = dto.LastName,
-                AddressOne = dto.AddressOne,
-                AddressTwo = dto.AddressTwo,
-                City = dto.City,
-                Country = dto.Country,
-                PostalCode = dto.PostalCode
+                LastName = dto.LastName
             };
 
             var createResult = await _userManager.CreateAsync(user, dto.Password);
             if (!createResult.Succeeded)
                 throw new Exception("User creation failed.");
 
-            var roleResult = await _userManager.AddToRoleAsync(user, dto.Role);
+            var roleResult = await _userManager.AddToRoleAsync(user, role);
             if (!roleResult.Succeeded)
                 throw new Exception("Failed to assign role.");
 
@@ -82,7 +78,9 @@ namespace MarketPlaceApi.Services
 
         public async Task<User?> GetUserByIdAsync(string userId)
         {
-            return await _userManager.Users.FirstOrDefaultAsync(u => u.Id == userId);
+            return await _userManager.Users
+                .Include(u => u.RoasterProfile)
+                .FirstOrDefaultAsync(u => u.Id == userId);
         }
 
         public async Task UpdateUserAsync(string id, UpdateUserDto dto)

@@ -35,8 +35,7 @@ public class UserServiceTests
         var dto = new RegisterDto
         {
             Email = "alice@test.com", Password = "Password1!", ConfirmPassword = "Password1!",
-            FirstName = "Alice", LastName = "Smith", Role = "Buyer",
-            AddressOne = "1 Road", City = "Leeds", Country = "UK", PostalCode = "LS1 1AA"
+            FirstName = "Alice", LastName = "Smith", Role = "Buyer"
         };
         _mockUserManager
             .Setup(m => m.CreateAsync(It.IsAny<User>(), dto.Password))

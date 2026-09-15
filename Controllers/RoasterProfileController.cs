@@ -2,12 +2,18 @@ using MarketPlaceApi.Dtos;
 using MarketPlaceApi.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Security.Claims;
+using System.Threading.Tasks;
 
 namespace MarketPlaceApi.Controllers
 {
     [ApiController]
     [Route("[controller]")]
+    [Route("api/[controller]")]
+    [Route("api/RoasterProfiles")]
     public class RoasterProfileController : ControllerBase
     {
         private readonly IRoasterProfileService _service;
@@ -25,7 +31,41 @@ namespace MarketPlaceApi.Controllers
             if (string.IsNullOrEmpty(userId)) return Unauthorized("No User Id claim found.");
 
             var profile = await _service.GetMyProfileAsync(userId);
+            if (profile == null)
+            {
+                return NotFound(new { message = "Roaster profile not found." });
+            }
             return Ok(profile);
+        }
+
+        [HttpPost("become-roaster")]
+        [Authorize]
+        public async Task<IActionResult> BecomeRoaster([FromBody] BecomeRoasterDto dto)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? User.FindFirstValue("sub");
+            if (string.IsNullOrEmpty(userId)) return Unauthorized("No User Id claim found.");
+
+            try
+            {
+                var result = await _service.BecomeRoasterAsync(userId, dto);
+                return Ok(result);
+            }
+            catch (ValidationException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = ex.Message });
+            }
         }
 
         [Authorize]
@@ -40,7 +80,7 @@ namespace MarketPlaceApi.Controllers
         }
 
         // Public storefront fetch (no auth)
-        // GET /RoasterProfile/public
+        // GET /RoasterProfile/all
         [HttpGet("all")]
         public async Task<IActionResult> GetAllRoaster()
         {

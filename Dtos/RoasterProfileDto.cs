@@ -1,3 +1,6 @@
+using System.Text.Json.Serialization;
+using MarketPlaceApi.Models;
+
 namespace MarketPlaceApi.Dtos
 {
     public class RoasterProfileDto
@@ -13,6 +16,9 @@ namespace MarketPlaceApi.Dtos
 
         public bool IsVerified { get; set; }
         public DateTime? VerifiedAtUtc { get; set; }
+
+        [JsonConverter(typeof(JsonStringEnumConverter))]
+        public ApprovalStatus ApprovalStatus { get; set; } = ApprovalStatus.Pending;
 
         public string? WebsiteUrl { get; set; }
         public string? InstagramUrl { get; set; }

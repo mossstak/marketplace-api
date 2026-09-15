@@ -5,6 +5,7 @@ namespace MarketPlaceApi.Dtos
     public class RegisterDto
     {
         [Required]
+        [EmailAddress]
         public string Email { get; set; } = default!;
 
         [Required]
@@ -19,13 +20,6 @@ namespace MarketPlaceApi.Dtos
         [Required]
         public string LastName { get; set; } = default!;
 
-        [Required]
-        public string Role { get; set; } = default!;   // "Seller", "Buyer", "Admin"
-
-        public string AddressOne { get; set; } = "";
-        public string AddressTwo { get; set; } = "";
-        public string City { get; set; } = "";
-        public string Country { get; set; } = "";
-        public string PostalCode { get; set; } = "";
+        public string Role { get; set; } = "Buyer";
     }
 }

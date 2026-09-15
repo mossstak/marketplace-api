@@ -184,6 +184,11 @@ namespace MarketPlaceApi.Data
                 if (existing != null)
                 {
                     ids.Add(existing.Id);
+                    var existingProfile = await db.RoasterProfiles.FirstOrDefaultAsync(rp => rp.UserId == existing.Id);
+                    if (existingProfile != null && s.IsVerified && existingProfile.ApprovalStatus == ApprovalStatus.Pending)
+                    {
+                        existingProfile.ApprovalStatus = ApprovalStatus.Approved;
+                    }
                     continue;
                 }
 
@@ -216,6 +221,7 @@ namespace MarketPlaceApi.Data
                     Country = s.Country,
                     IsVerified = s.IsVerified,
                     VerifiedAtUtc = s.IsVerified ? DateTime.UtcNow.AddMonths(-3) : null,
+                    ApprovalStatus = s.IsVerified ? ApprovalStatus.Approved : ApprovalStatus.Pending,
                     WebsiteUrl = s.WebsiteUrl,
                     InstagramUrl = s.Instagram,
                 });

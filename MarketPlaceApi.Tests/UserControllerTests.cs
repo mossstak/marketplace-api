@@ -49,8 +49,7 @@ public class UserControllerTests
         var dto = new RegisterDto
         {
             Email = "test@test.com", Password = "Password1!", ConfirmPassword = "Different!",
-            FirstName = "John", LastName = "Doe", Role = "Buyer",
-            AddressOne = "1 Road", City = "London", Country = "UK", PostalCode = "E1 1AA"
+            FirstName = "John", LastName = "Doe", Role = "Buyer"
         };
 
         var result = await _controller.Register(dto);
@@ -60,19 +59,18 @@ public class UserControllerTests
     }
 
     [Fact]
-    public async Task Register_ReturnsBadRequest_WhenBuyerHasNoAddress()
+    public async Task Register_ReturnsOk_WithoutAddressFields()
     {
         var dto = new RegisterDto
         {
             Email = "buyer@test.com", Password = "Password1!", ConfirmPassword = "Password1!",
-            FirstName = "Jane", LastName = "Smith", Role = "Buyer"
-            // AddressOne / City / Country / PostalCode intentionally omitted
+            FirstName = "Jane", LastName = "Smith"
         };
+        _mockUserService.Setup(s => s.Register(It.IsAny<RegisterDto>())).ReturnsAsync(new User());
 
         var result = await _controller.Register(dto);
 
-        var bad = Assert.IsType<BadRequestObjectResult>(result);
-        Assert.Equal("Address fields are required for buyers and sellers.", bad.Value);
+        Assert.IsType<OkObjectResult>(result);
     }
 
     [Fact]
@@ -81,8 +79,7 @@ public class UserControllerTests
         var dto = new RegisterDto
         {
             Email = "buyer@test.com", Password = "Password1!", ConfirmPassword = "Password1!",
-            FirstName = "Jane", LastName = "Smith", Role = "Buyer",
-            AddressOne = "1 Main St", City = "London", Country = "UK", PostalCode = "E1 1AA"
+            FirstName = "Jane", LastName = "Smith", Role = "Buyer"
         };
         _mockUserService.Setup(s => s.Register(It.IsAny<RegisterDto>())).ReturnsAsync(new User());
 
@@ -97,8 +94,7 @@ public class UserControllerTests
         var dto = new RegisterDto
         {
             Email = "buyer@test.com", Password = "Password1!", ConfirmPassword = "Password1!",
-            FirstName = "A", LastName = "B", Role = "Buyer",
-            AddressOne = "1 Main St", City = "London", Country = "UK", PostalCode = "E1 1AA"
+            FirstName = "A", LastName = "B", Role = "Buyer"
         };
         _mockUserService
             .Setup(s => s.Register(It.IsAny<RegisterDto>()))
