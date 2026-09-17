@@ -34,13 +34,7 @@ namespace MarketPlaceApi.Services
 
         private decimal GetCommissionPercentage(long amountInMinorUnit)
         {
-            return amountInMinorUnit switch
-            {
-                < 1000 => 10.0m,
-                >= 1000 and < 2000 => 15.0m,
-                >= 2000 and < 3000 => 20.0m,
-                _ => 30.0m
-            };
+            return 10.0m;
         }
 
         public async Task<StripeOnboardingResponseDto> CreateOrGetOnboardingLinkAsync(string userId, CreateOnboardingLinkRequestDto dto)
@@ -158,6 +152,7 @@ namespace MarketPlaceApi.Services
 
         public async Task<DestinationPaymentIntentResponseDto> CreateDestinationPaymentIntentAsync(CreateDestinationPaymentRequestDto dto)
         {
+
             if (dto.AmountInMinorUnit < 30)
             {
                 throw new InvalidOperationException("The minimum payment amount is £0.30 (30p).");
@@ -195,7 +190,7 @@ namespace MarketPlaceApi.Services
             decimal feePercentage = GetCommissionPercentage(dto.AmountInMinorUnit);
 
             // Calculate Application Fee (Platform Commission)
-            long applicationFee = (long)Math.Round(dto.AmountInMinorUnit * (feePercentage / 100.0m));
+            long applicationFee = (long)Math.Round(dto.AmountInMinorUnit * (feePercentage / 100.0m), MidpointRounding.AwayFromZero);
 
             if (applicationFee >= dto.AmountInMinorUnit)
             {
