@@ -203,6 +203,34 @@ namespace MarketPlaceApi.Controllers
             }
         }
 
+        [HttpPost("forgot-password")]
+        public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordDto dto)
+        {
+            try
+            {
+                await _userService.ForgotPasswordAsync(dto.Email);
+                return Ok(new { message = "If your email is registered, a reset link has been sent." });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpPost("reset-password")]
+        public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordDto dto)
+        {
+            try
+            {
+                await _userService.ResetPasswordAsync(dto);
+                return Ok(new { message = "Password has been successfully reset. You can now log in." });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
         private string? GetCurrentUserId() =>
             User.FindFirstValue(ClaimTypes.NameIdentifier) ?? User.FindFirstValue("sub");
 

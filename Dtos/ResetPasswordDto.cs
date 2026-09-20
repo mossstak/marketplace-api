@@ -2,11 +2,19 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using System.ComponentModel.DataAnnotations;
 
 namespace MarketPlaceApi.Dtos
 {
     public class ResetPasswordDto
     {
-        public string NewPassword { get; set; }
+        [Required, EmailAddress]
+        public string Email { get; set; } = string.Empty;
+
+        [Required]
+        public string Token { get; set; } = string.Empty;
+
+        [Required, MinLength(6)]
+        public string NewPassword { get; set; } = string.Empty;
     }
 }

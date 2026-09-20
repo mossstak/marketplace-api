@@ -1,6 +1,7 @@
 using MarketPlaceApi.Dtos;
 using MarketPlaceApi.Models;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.EntityFrameworkCore;
 
 namespace MarketPlaceApi.Services
@@ -10,12 +11,17 @@ namespace MarketPlaceApi.Services
         private readonly UserManager<User> _userManager;
         private readonly SignInManager<User> _signInManager;
 
+        private readonly IEmailSender _emailSender;
+
         public UserService(
             UserManager<User> userManager,
-            SignInManager<User> signInManager)
+            SignInManager<User> signInManager,
+            IEmailSender emailSender)
+
         {
             _userManager = userManager;
             _signInManager = signInManager;
+            _emailSender = emailSender;
         }
 
         public async Task<User> Register(RegisterDto dto)
@@ -162,6 +168,40 @@ namespace MarketPlaceApi.Services
                 throw new Exception(
                     string.Join(", ", result.Errors.Select(e => e.Description))
                 );
+        }
+
+        public async Task ForgotPasswordAsync(string email)
+        {
+            var user = await _userManager.FindByEmailAsync(email);
+            // Security practice: do not reveal whether the email exists
+            if (user == null) return;
+
+            var token = await _userManager.GeneratePasswordResetTokenAsync(user);
+
+            // Build the frontend URL with URL-encoded parameters
+            var frontendBaseUrl = "http://localhost:3000"; // Or read from _config["Frontend:BaseUrl"]
+            var resetLink = $"{frontendBaseUrl}/reset-password?email={Uri.EscapeDataString(user.Email!)}&token={Uri.EscapeDataString(token)}";
+
+            await _emailSender.SendEmailAsync(
+                user.Email!,
+                "Reset Your Marketplace Password",
+                $"<p>Click <a href='{resetLink}'>here</a> to reset your password. This link is valid for 1 day.</p>"
+            );
+        }
+
+        public async Task ResetPasswordAsync(ResetPasswordDto dto)
+        {
+            var user = await _userManager.FindByEmailAsync(dto.Email);
+            if (user == null)
+                throw new InvalidOperationException("Invalid password reset request.");
+
+            var result = await _userManager.ResetPasswordAsync(user, dto.Token, dto.NewPassword);
+            if (!result.Succeeded)
+            {
+                throw new InvalidOperationException(
+                    string.Join(", ", result.Errors.Select(e => e.Description))
+                );
+            }
         }
 
     }

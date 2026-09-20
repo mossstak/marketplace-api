@@ -4,6 +4,7 @@ using MarketPlaceApi.Models;
 using MarketPlaceApi.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi;
@@ -11,53 +12,41 @@ using Npgsql;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen(
-    options =>
-    {
-        options.SwaggerDoc("v1", new OpenApiInfo
-        {
-            Title = "Roaster's Market",
-            Version = "1.0",
-            Description = "The API for Roaster's Market"
-        });
-    });
 
-// Database
+// API Documentation
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen(options =>
+{
+    options.SwaggerDoc("v1", new OpenApiInfo
+    {
+        Title = "Roaster's Market",
+        Version = "1.0",
+        Description = "The API for Roaster's Market"
+    });
+});
+
+// Database Setup
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 if (string.IsNullOrWhiteSpace(connectionString))
 {
     throw new InvalidOperationException("DefaultConnection is empty. Check ConnectionStrings__DefaultConnection or appsettings.");
 }
-try
-{
-    var parsed = new NpgsqlConnectionStringBuilder(connectionString);
-    builder.Logging.AddSimpleConsole(options => options.SingleLine = true);
-    builder.Logging.Services.BuildServiceProvider()
-        .GetRequiredService<ILoggerFactory>()
-        .CreateLogger("Startup")
-        .LogInformation("Using DB {Database} on {Host}:{Port} as {Username}.",
-            parsed.Database, parsed.Host, parsed.Port, parsed.Username);
-}
-catch
-{
-    // If parsing fails, let EF/Npgsql throw the original exception.
-}
+
+builder.Logging.AddSimpleConsole(options => options.SingleLine = true);
 builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseNpgsql(connectionString));
 
-//Cors-Configuration
+// CORS Configuration
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowFrontend",
-        policy =>
-        {
-            policy.WithOrigins("http://localhost:5173", "http://localhost:3000", "https://roastersmarket.vercel.app")
-                  .AllowAnyHeader()
-                  .AllowAnyMethod();
-        });
+    options.AddPolicy("AllowFrontend", policy =>
+    {
+        policy.WithOrigins("http://localhost:5173", "http://localhost:3000", "https://roastersmarket.vercel.app")
+              .AllowAnyHeader()
+              .AllowAnyMethod();
+    });
 });
 
-// Identity
+// Identity Configuration
 builder.Services.AddIdentity<User, IdentityRole>(options =>
 {
     options.Password.RequireDigit = true;
@@ -67,7 +56,7 @@ builder.Services.AddIdentity<User, IdentityRole>(options =>
 .AddEntityFrameworkStores<ApplicationDbContext>()
 .AddDefaultTokenProviders();
 
-//JWT Auth
+// JWT Authentication
 var jwtSettings = builder.Configuration.GetSection("Jwt");
 var key = Encoding.UTF8.GetBytes(jwtSettings["Key"]!);
 
@@ -90,6 +79,7 @@ builder.Services.AddAuthentication(options =>
     };
 });
 
+// Authorization Policies
 builder.Services.AddAuthorization(options =>
 {
     options.AddPolicy("VerifiedSeller", policy =>
@@ -99,15 +89,18 @@ builder.Services.AddAuthorization(options =>
     });
 });
 
-// Add services to the container.
-builder.Services.AddAuthorization();
-builder.Services.AddControllers();
+// Controllers with JSON formatting
 builder.Services.AddControllers()
     .AddJsonOptions(o =>
     {
         o.JsonSerializerOptions.PropertyNamingPolicy =
             System.Text.Json.JsonNamingPolicy.CamelCase;
     });
+
+// Email Service (Local logging)
+builder.Services.AddTransient<IEmailSender, ConsoleEmailSender>();
+
+// Application Services
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<ICoffeeAttributeService, CoffeeAttributeService>();
 builder.Services.AddScoped<IProductService, MarketPlaceApi.Services.ProductService>();
@@ -116,8 +109,7 @@ builder.Services.AddScoped<IRoasterProfileService, RoasterProfileService>();
 builder.Services.AddScoped<IStripeConnectService, StripeConnectService>();
 builder.Services.AddScoped<MarketPlaceApi.Services.TokenService>();
 
-
-//Cloudinary
+// Cloudinary
 builder.Services.Configure<CloudinaryOptions>(builder.Configuration.GetSection("Cloudinary"));
 builder.Services.AddScoped<ICloudinarySigner, CloudinarySigner>();
 builder.Services.AddScoped<IProductImagesService, ProductImagesService>();
@@ -125,28 +117,19 @@ builder.Services.AddScoped<ISellerImagesService, SellerImagesService>();
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
-// Allow Swagger in Production/Render
-app.UseSwagger();
-app.UseSwaggerUI(c =>
+// Log database connection safely using the built app logger (fixes ASP0000)
+try
 {
-    c.SwaggerEndpoint("/swagger/v1/swagger.json", "My API V1");
-    // Optional: Serve Swagger at root (https://your-app.onrender.com/)
-    // c.RoutePrefix = string.Empty; 
-});
+    var parsed = new NpgsqlConnectionStringBuilder(connectionString);
+    app.Logger.LogInformation("Using DB {Database} on {Host}:{Port} as {Username}.",
+        parsed.Database, parsed.Host, parsed.Port, parsed.Username);
+}
+catch
+{
+    // Ignore parsing issues; let EF/Npgsql handle connectivity
+}
 
-app.UseHttpsRedirection();
-
-app.UseCors("AllowFrontend");
-app.UseAuthentication();
-app.UseAuthorization();
-app.MapControllers();
-
-app.MapGet("/", () => "API is running!");
-
-// your endpoints
-// app.MapGet("/Products/all", () => Results.Ok(new[] { new { Id = 1, Name = "Test" } }));
-
+// Database Migrations & Seeding (runs before receiving traffic)
 using (var scope = app.Services.CreateScope())
 {
     var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
@@ -164,9 +147,10 @@ using (var scope = app.Services.CreateScope())
     var userManager = scope.ServiceProvider.GetRequiredService<UserManager<User>>();
     await MarketPlaceApi.Data.DataSeeder.SeedAsync(dbContext, userManager);
 
-    var adminEmail = "mostak1993@gmail.com";
-    var adminUser = await userManager.FindByEmailAsync(adminEmail);
+    var adminEmail = builder.Configuration["Admin:Email"] ?? "mostak1993@gmail.com";
+    var adminPassword = builder.Configuration["Admin:Password"] ?? Environment.GetEnvironmentVariable("ADMIN_SEED_PASSWORD") ?? "MBdk6&N7Tl0P3n*Czi%=";
 
+    var adminUser = await userManager.FindByEmailAsync(adminEmail);
     if (adminUser == null)
     {
         var newAdmin = new User
@@ -178,12 +162,28 @@ using (var scope = app.Services.CreateScope())
             LastName = "Khan"
         };
 
-        var result = await userManager.CreateAsync(newAdmin, "MBdk6&N7Tl0P3n*Czi%=");
+        var result = await userManager.CreateAsync(newAdmin, adminPassword);
         if (result.Succeeded)
         {
             await userManager.AddToRoleAsync(newAdmin, "Admin");
         }
     }
 }
+
+// Middleware Pipeline
+app.UseSwagger();
+app.UseSwaggerUI(c =>
+{
+    c.SwaggerEndpoint("/swagger/v1/swagger.json", "My API V1");
+});
+
+app.UseHttpsRedirection();
+app.UseCors("AllowFrontend");
+
+app.UseAuthentication();
+app.UseAuthorization();
+
+app.MapGet("/", () => "API is running!");
+app.MapControllers();
 
 app.Run();

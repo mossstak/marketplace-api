@@ -17,5 +17,7 @@ namespace MarketPlaceApi.Services
         Task EditUserAsync(string id, EditUserDto dto);
         Task ChangePasswordAsync(string userId, ChangePasswordDto dto);
         Task ResetPasswordAsync(string userId, string newPassword);
+        Task ForgotPasswordAsync(string email);
+        Task ResetPasswordAsync(ResetPasswordDto dto);
     }
 }
