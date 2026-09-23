@@ -6,10 +6,13 @@ using MarketPlaceApi.Dtos;
 using MarketPlaceApi.Models;
 using MarketPlaceApi.Services;
 
+using Microsoft.AspNetCore.Identity.UI.Services;
+
 public class UserServiceTests
 {
     private readonly Mock<UserManager<User>> _mockUserManager;
     private readonly Mock<SignInManager<User>> _mockSignInManager;
+    private readonly Mock<IEmailSender> _mockEmailSender;
     private readonly UserService _userService;
 
     public UserServiceTests()
@@ -24,7 +27,9 @@ public class UserServiceTests
             Mock.Of<IUserClaimsPrincipalFactory<User>>(),
             null, null, null, null);
 
-        _userService = new UserService(_mockUserManager.Object, _mockSignInManager.Object);
+        _mockEmailSender = new Mock<IEmailSender>();
+
+        _userService = new UserService(_mockUserManager.Object, _mockSignInManager.Object, _mockEmailSender.Object);
     }
 
     // ── Register ──────────────────────────────────────────────────────────────

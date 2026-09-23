@@ -24,11 +24,15 @@ public class OrderService : IOrderService
 
         var variantIds = dto.Items.Select(i => i.VariantId).ToList();
         var variants = await _context.ProductVariants
+            .Include(v => v.Product)
             .Where(v => variantIds.Contains(v.Id))
             .ToListAsync();
 
         if (variants.Count != variantIds.Distinct().Count())
             throw new KeyNotFoundException("One or more product variants were not found.");
+
+        if (variants.Any(v => v.Product != null && v.Product.SellerId == buyer.Id))
+            throw new InvalidOperationException("You cannot purchase your own products.");
 
         var order = new Order
         {
@@ -92,11 +96,15 @@ public class OrderService : IOrderService
         // Validate new variants
         var newVariantIds = dto.Items.Select(i => i.VariantId).ToList();
         var newVariants = await _context.ProductVariants
+            .Include(v => v.Product)
             .Where(v => newVariantIds.Contains(v.Id))
             .ToListAsync();
 
         if (newVariants.Count != newVariantIds.Distinct().Count())
             throw new KeyNotFoundException("One or more product variants were not found.");
+
+        if (newVariants.Any(v => v.Product != null && v.Product.SellerId == buyer.Id))
+            throw new InvalidOperationException("You cannot purchase your own products.");
 
         order.Items.Clear();
         order.TotalAmount = 0;

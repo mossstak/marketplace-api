@@ -118,7 +118,8 @@ namespace MarketPlaceApi.Controllers
         {
             try
             {
-                var result = await _stripeConnectService.CreateDestinationPaymentIntentAsync(dto);
+                var userId = GetUserId();
+                var result = await _stripeConnectService.CreateDestinationPaymentIntentAsync(dto, string.IsNullOrEmpty(userId) ? null : userId);
                 return Ok(result);
             }
             catch (InvalidOperationException ex)

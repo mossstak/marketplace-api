@@ -150,7 +150,7 @@ namespace MarketPlaceApi.Services
             };
         }
 
-        public async Task<DestinationPaymentIntentResponseDto> CreateDestinationPaymentIntentAsync(CreateDestinationPaymentRequestDto dto)
+        public async Task<DestinationPaymentIntentResponseDto> CreateDestinationPaymentIntentAsync(CreateDestinationPaymentRequestDto dto, string? currentUserId = null)
         {
 
             if (dto.AmountInMinorUnit < 30)
@@ -158,10 +158,24 @@ namespace MarketPlaceApi.Services
                 throw new InvalidOperationException("The minimum payment amount is £0.30 (30p).");
             }
 
-            var roaster = await _dbContext.RoasterProfiles.FirstOrDefaultAsync(r => r.Id == dto.RoasterProfileId);
+            var roaster = await _dbContext.RoasterProfiles
+                .Include(r => r.User)
+                .FirstOrDefaultAsync(r => r.Id == dto.RoasterProfileId);
             if (roaster == null)
             {
                 throw new InvalidOperationException("The selected roaster profile was not found.");
+            }
+
+            if (!string.IsNullOrEmpty(currentUserId) && roaster.UserId == currentUserId)
+            {
+                throw new InvalidOperationException("You cannot purchase products from your own roaster store.");
+            }
+
+            if (!string.IsNullOrWhiteSpace(dto.CustomerEmail) &&
+                roaster.User != null &&
+                string.Equals(dto.CustomerEmail.Trim(), roaster.User.Email?.Trim(), StringComparison.OrdinalIgnoreCase))
+            {
+                throw new InvalidOperationException("You cannot purchase products from your own roaster store.");
             }
 
             if (string.IsNullOrEmpty(roaster.StripeAccountId))

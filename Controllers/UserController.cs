@@ -68,7 +68,7 @@ namespace MarketPlaceApi.Controllers
                 var roles = await _userManager.GetRolesAsync(user);
                 var token = _tokenService.CreateToken(user, roles);
 
-                return Ok(new { roles, token });
+                return Ok(new { roles, token, userId = user.Id });
             }
             catch (Exception ex)
             {

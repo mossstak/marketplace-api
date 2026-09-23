@@ -172,7 +172,11 @@ namespace MarketPlaceApi.Services
                         img.ImageUrl,
                         img.IsPrimary
                     })
-                    .ToList()
+                    .ToList(),
+                roastLevel = p.RoastLevel != null ? p.RoastLevel.Name : null,
+                origin = p.Origin != null ? p.Origin.Name : null,
+                coffeeProcess = p.CoffeeProcess != null ? p.CoffeeProcess.Name : null,
+                roastDate = p.RoastDate
             }).ToListAsync();
 
             return products.Cast<object>();

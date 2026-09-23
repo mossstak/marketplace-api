@@ -7,7 +7,7 @@ namespace MarketPlaceApi.Services
         Task<StripeOnboardingResponseDto> CreateOrGetOnboardingLinkAsync(string userId, CreateOnboardingLinkRequestDto dto);
         Task<StripeAccountStatusResponseDto> GetAccountStatusAsync(string userId);
         Task<StripeLoginLinkResponseDto> CreateExpressDashboardLinkAsync(string userId);
-        Task<DestinationPaymentIntentResponseDto> CreateDestinationPaymentIntentAsync(CreateDestinationPaymentRequestDto dto);
+        Task<DestinationPaymentIntentResponseDto> CreateDestinationPaymentIntentAsync(CreateDestinationPaymentRequestDto dto, string? currentUserId = null);
         Task HandleWebhookAsync(string jsonBody, string stripeSignature);
     }
 }
