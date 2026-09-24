@@ -15,16 +15,19 @@ namespace MarketPlaceApi.Controllers
         private readonly IUserService _userService;
         private readonly UserManager<User> _userManager;
         private readonly TokenService _tokenService;
+        private readonly ICloudinarySigner _cloudinarySigner;
 
         public UserController(
             IUserService userService,
             UserManager<User> userManager,
-            TokenService tokenService
+            TokenService tokenService,
+            ICloudinarySigner cloudinarySigner
         )
         {
             _userService = userService;
             _userManager = userManager;
             _tokenService = tokenService;
+            _cloudinarySigner = cloudinarySigner;
         }
 
         [HttpPost("register")]
@@ -108,14 +111,98 @@ namespace MarketPlaceApi.Controllers
                 user.FirstName,
                 user.LastName,
                 user.Email,
+                user.PhoneNumber,
                 user.AddressOne,
                 user.AddressTwo,
                 user.City,
                 user.Country,
                 user.PostalCode,
+                user.ProfileImageUrl,
+                CompanyName = user.RoasterProfile?.CompanyName,
                 Roles = roles,
                 HasRoasterProfile = hasRoasterProfile
             });
+        }
+
+        [Authorize]
+        [HttpPatch("me")]
+        public async Task<IActionResult> EditMe([FromBody] EditUserDto dto)
+        {
+            var userId = GetCurrentUserId();
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized("No User Id claim found.");
+
+            try
+            {
+                await _userService.EditUserAsync(userId, dto);
+                return Ok(new { message = "Profile updated successfully." });
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        public record UpdateProfileImageRequest(string ImageUrl);
+
+        [Authorize]
+        [HttpPost("profile-image/sign")]
+        public IActionResult SignProfileImageUpload()
+        {
+            var userId = GetCurrentUserId();
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized("No User Id claim found.");
+
+            var folder = $"marketplace/users/{userId}";
+            var signed = _cloudinarySigner.CreateUploadSignature(folder);
+            return Ok(signed);
+        }
+
+        [Authorize]
+        [HttpPost("profile-image")]
+        public async Task<IActionResult> UpdateProfileImage([FromBody] UpdateProfileImageRequest dto)
+        {
+            var userId = GetCurrentUserId();
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized("No User Id claim found.");
+
+            if (string.IsNullOrWhiteSpace(dto.ImageUrl))
+                return BadRequest("Image URL is required.");
+
+            var user = await _userManager.FindByIdAsync(userId);
+            if (user == null)
+                return NotFound("User not found.");
+
+            user.ProfileImageUrl = dto.ImageUrl;
+            var result = await _userManager.UpdateAsync(user);
+            if (!result.Succeeded)
+                return BadRequest("Failed to update profile image: " + string.Join(", ", result.Errors.Select(e => e.Description)));
+
+            return Ok(new { message = "Profile image updated successfully.", profileImageUrl = user.ProfileImageUrl });
+        }
+
+        [Authorize]
+        [HttpDelete("profile-image")]
+        public async Task<IActionResult> DeleteProfileImage()
+        {
+            var userId = GetCurrentUserId();
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized("No User Id claim found.");
+
+            var user = await _userManager.FindByIdAsync(userId);
+            if (user == null)
+                return NotFound("User not found.");
+
+            user.ProfileImageUrl = null;
+            var result = await _userManager.UpdateAsync(user);
+            if (!result.Succeeded)
+                return BadRequest("Failed to remove profile image: " + string.Join(", ", result.Errors.Select(e => e.Description)));
+
+            return Ok(new { message = "Profile image removed successfully." });
         }
 
         [Authorize]

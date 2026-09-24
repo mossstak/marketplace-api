@@ -109,7 +109,10 @@ namespace MarketPlaceApi.Services
 
         public async Task EditUserAsync(string id, EditUserDto dto)
         {
-            var user = await _userManager.Users.FirstOrDefaultAsync(u => u.Id == id.ToString()) ?? throw new KeyNotFoundException("User Not Found");
+            var user = await _userManager.Users
+                .Include(u => u.RoasterProfile)
+                .FirstOrDefaultAsync(u => u.Id == id.ToString()) ?? throw new KeyNotFoundException("User Not Found");
+
             if (!string.IsNullOrWhiteSpace(dto.FirstName))
                 user.FirstName = dto.FirstName;
 
@@ -117,26 +120,40 @@ namespace MarketPlaceApi.Services
                 user.LastName = dto.LastName;
 
             if (!string.IsNullOrWhiteSpace(dto.Email))
+            {
                 user.Email = dto.Email;
+                user.UserName = dto.Email;
+            }
 
-            if (!string.IsNullOrWhiteSpace(dto.AddressOne))
+            if (dto.PhoneNumber != null)
+                user.PhoneNumber = dto.PhoneNumber;
+
+            if (dto.AddressOne != null)
                 user.AddressOne = dto.AddressOne;
 
-            if (!string.IsNullOrWhiteSpace(dto.AddressTwo))
+            if (dto.AddressTwo != null)
                 user.AddressTwo = dto.AddressTwo;
 
-            if (!string.IsNullOrWhiteSpace(dto.City))
+            if (dto.City != null)
                 user.City = dto.City;
 
-            if (!string.IsNullOrWhiteSpace(dto.Country))
+            if (dto.Country != null)
                 user.Country = dto.Country;
 
-            if (!string.IsNullOrWhiteSpace(dto.PostalCode))
+            if (dto.PostalCode != null)
                 user.PostalCode = dto.PostalCode;
+
+            if (dto.ProfileImageUrl != null)
+                user.ProfileImageUrl = dto.ProfileImageUrl;
+
+            if (!string.IsNullOrWhiteSpace(dto.Company_Name) && user.RoasterProfile != null)
+            {
+                user.RoasterProfile.CompanyName = dto.Company_Name;
+            }
 
             var result = await _userManager.UpdateAsync(user);
             if (!result.Succeeded)
-                throw new Exception("Failed to update user");
+                throw new Exception("Failed to update user: " + string.Join(", ", result.Errors.Select(e => e.Description)));
         }
 
         public async Task ChangePasswordAsync(string userId, ChangePasswordDto dto)

@@ -11,6 +11,7 @@ namespace MarketPlaceApi.Models
         public string? City {get; set;}
         public string? Country {get; set;}
         public string? PostalCode {get; set;}
+        public string? ProfileImageUrl { get; set; }
 
         public RoasterProfile? RoasterProfile { get; set; }
         public ICollection<Product> Products { get; set; } = new List<Product>();

@@ -15,6 +15,7 @@ public class UserControllerTests
     private readonly Mock<IUserService> _mockUserService;
     private readonly Mock<UserManager<User>> _mockUserManager;
     private readonly TokenService _tokenService;
+    private readonly Mock<ICloudinarySigner> _mockCloudinary;
     private readonly UserController _controller;
 
     public UserControllerTests()
@@ -34,11 +35,13 @@ public class UserControllerTests
         var mockConfig = new Mock<IConfiguration>();
         mockConfig.Setup(c => c.GetSection("Jwt")).Returns(jwtSection.Object);
         _tokenService = new TokenService(mockConfig.Object);
+        _mockCloudinary = new Mock<ICloudinarySigner>();
 
         _controller = new UserController(
             _mockUserService.Object,
             _mockUserManager.Object,
-            _tokenService);
+            _tokenService,
+            _mockCloudinary.Object);
     }
 
     // ── Register ──────────────────────────────────────────────────────────────
